@@ -1,0 +1,274 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Header */
+header {
+    background-color: #333;
+    color: #fff;
+}
+
+.top-bar {
+    background-color: #333;
+    padding: 10px 0;
+    border-bottom: 3px solid #7ac142;
+}
+
+.top-bar .logo img {
+    height: 50px;
+}
+
+.top-bar .search-bar {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.top-bar .search-bar input {
+    padding: 5px;
+    border: none;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+.top-bar .search-bar button {
+    background-color: #7ac142;
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.top-bar .cart {
+    margin-left: 20px;
+}
+
+.top-bar .cart a {
+    color: #7ac142;
+    text-decoration: none;
+}
+
+nav {
+    background-color: #444;
+    padding: 10px 0;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    display: block;
+    border-radius: 3px;
+}
+
+nav ul li a:hover {
+    background-color: #7ac142;
+}
+
+/* Main Content */
+main {
+    display: flex;
+    padding: 20px 0;
+}
+
+aside {
+    width: 25%;
+    padding-right: 20px;
+}
+
+.categories {
+    background-color: #fff;
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.categories h3 {
+    margin-top: 0;
+}
+
+.categories ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.categories ul li {
+    margin-bottom: 5px;
+}
+
+.categories ul li a {
+    color: #333;
+    text-decoration: none;
+    display: block;
+    padding: 10px;
+    background-color: #7ac142;
+    color: #fff;
+    border-radius: 3px;
+}
+
+.categories ul li a:hover {
+    background-color: #6da93a;
+}
+
+.banner img {
+    width: 100%;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bestsellers {
+    background-color: #fff;
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bestsellers h3 {
+    margin-top: 0;
+}
+
+.content {
+    width: 75%;
+}
+
+.slider img {
+    width: 100%;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.content h2 {
+    margin-top: 20px;
+}
+
+.products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.product-item {
+    width: calc(33.333% - 20px);
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.product-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.product-details {
+    margin-top: 10px;
+}
+
+.product-details h3 {
+    font-size: 1em;
+    margin: 10px 0;
+}
+
+.product-details p {
+    color: #7ac142;
+    font-size: 1.2em;
+}
+
+.product-details .old-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9em;
+}
+
+.product-details button {
+    background-color: #7ac142;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.product-details button:hover {
+    background-color: #6da93a;
+}
+
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    border-top: 3px solid #7ac142;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 20px;
+}
+
+.footer-links h3 {
+    margin-top: 0;
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links ul li {
+    margin-bottom: 10px;
+}
+
+.footer-links ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.footer-links ul li a:hover {
+    text-decoration: underline;
+}
+
+.footer-bottom {
+    text-align: center;
+    border-top: 1px solid #444;
+    padding-top: 10px;
+    margin-top: 20px;
+}
+
+.footer-bottom p {
+    margin: 0;
+}
