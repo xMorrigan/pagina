@@ -1,5 +1,4 @@
 function validar_registro(event) {
-    console.log("si llego")
     let nombre = document.getElementById("nombre").value;
     let apellidos = document.getElementById("apellidos").value;
     let email = document.getElementById("email").value;
@@ -27,5 +26,23 @@ function validar_registro(event) {
     }
     else {
         document.registro.submit();
+    }
+}
+
+function validar_login(event){
+    let correo  = document.getElementById("email").value;
+    let pwd  = document.getElementById("password").value;
+    if(correo == "" || pwd == "")
+    {
+        alert("Debe rellenar los campos faltantes");
+        event.preventDefault();
+    } 
+    var re = /\S+@\S+\.\S+/;
+    if(!re.test(correo)) {
+        alert('El correo electrónico ingresado no es válido.');
+        return false;
+    }
+    else{
+        document.form.submit();
     }
 }

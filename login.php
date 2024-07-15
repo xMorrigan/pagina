@@ -16,13 +16,13 @@
 	<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
 	<link rel="stylesheet" type="text/css" href="csss/util.css">
 	<link rel="stylesheet" type="text/css" href="csss/main.css">
+	<script src="js/validacion.js"></script>
 </head>
 <body>
 	<div class="limiter">
 	  <div class="container-login100">
 		<div class="wrap-login100">
-		  <form class="login100-form validate-form">
-		  <form method ="post" action=""> 
+		  <form method ="post" action="validar_login.php" class="login100-form validate-form" onsubmit="validar_login(event);"> 
 			<span class="login100-form-title p-b-26">
 			  Bienvenido!
 			  <img src="img/LOGO.png" class="img-fluid rounded" class="align-items-center" style="width: 50px; height: 50px;" alt="">
@@ -40,7 +40,7 @@
 			  <span class="btn-show-pass">
 				<i class="zmdi zmdi-eye"></i>
 			  </span>
-			  <input class="input100" type="text" name="password">
+			  <input class="input100" type="text" name="password" id="password">
 			  <span class="focus-input100" data-placeholder="Contraseña"></span>
 			</div>
   
@@ -49,10 +49,10 @@
 				<a href="index.html" class="login100-form-bgbtn">
 				  <div class="login100-form-bgbtn"></div>
 				</a>
-				<button name ="btningresar" class="login100-form-btn" type="sumbit" value="Iniciar Sesion" >
+				<button name ="btningresar" class="login100-form-btn" type="sumbit" value="Iniciar Sesion" >Iniciar Sesion</button>
 			  </div>
 			</div>
-		</from>
+		</form>
   
 			<script>
 			  function validarEmail() {
@@ -72,7 +72,7 @@
 				No tienes una cuenta?
 			  </span>
   
-			  <a class="txt2" href="registrate.html">>
+			  <a class="txt2" href="registrate.php">
 				Registrate
 			  </a>
 			</div>
