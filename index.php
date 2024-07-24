@@ -1,3 +1,41 @@
+<?php session_start();
+$varsession = $_SESSION['id'];
+if($varsession == null || $varsession== ''){
+    echo "Usted no tiene autorizacion";
+    die(); //termina la sesion para que 
+}
+include 'conexion.php';
+
+$productosC = "SELECT * FROM productos ORDER BY id DESC LIMIT 9";
+$productos = mysqli_query($conexion, $productosC);
+$productos1 = mysqli_fetch_array($productos);
+$botinesC = "SELECT * FROM productos WHERE categoria = 'botines'";
+$botines = mysqli_query($conexion, $botinesC);
+$botines1 = mysqli_fetch_array($botines);
+$sombrerosC = "SELECT * FROM productos WHERE categoria = 'sombreros'";
+$sombreros = mysqli_query($conexion, $sombrerosC);
+$sombreros1 = mysqli_fetch_array($sombreros);
+$trajesC = "SELECT * FROM productos WHERE categoria = 'trajes'";
+$trajes = mysqli_query($conexion, $trajesC);
+$trajes1 = mysqli_fetch_array($trajes);
+$camisasC = "SELECT * FROM productos WHERE categoria = 'camisas'";
+$camisas = mysqli_query($conexion, $camisasC);
+$camisas1 = mysqli_fetch_array($camisas);
+
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
+    $id_usuario = $_SESSION['id'];
+    $id_producto = $_POST['id_producto'];
+
+    $insertar = "INSERT INTO carrito_usuarios (id_sesion, id_producto) VALUES ('$id_usuario', '$id_producto')";
+    if (mysqli_query($conexion, $insertar)) {
+        echo "<script> alert('Producto añadido al carrito'); </script>";
+        header('Location: index.php');
+    } else {
+        echo "Error al añadir el producto: " . mysqli_error($conexion);
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -168,193 +206,63 @@
                     <div class="tab-content">
                         <div id="tab-1" class="tab-pane fade show p-0 active">
                             <div class="row g-4">
-                                <div class="col-lg-12">
-                                    <div class="row g-4">
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Botin 501.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Botin 501 </h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                <?php if ($productos) {while ($fila = mysqli_fetch_assoc($productos)) {?>
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                    <div class="rounded position-relative fruite-item">
+                                        <div class="fruite-img">
+                                            <img src="<?php echo $fila['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
                                         </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Botin_545.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Botin 545</h4>
-                                                    <p>Productos 100% Mexicanos                              
-                                                        <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Botin_640.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Botin 640</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Botin 982.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Botin 982</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Stetson paja.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Sombrero Paja</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/stetson fieltro.png" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Sombrero Fieltro</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/charro.png" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Traje Charro</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Ade_Rojo.jfif" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Traje Adelita   </h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
+                                        <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                                            <h4><?php echo $fila['nombre']; ?></h4>
+                                            <p><?php echo $fila['descripcion']; ?></p>
+                                            <div class="d-flex justify-content-between flex-lg-wrap">
+                                            <p class="text-dark fs-5 fw-bold mb-0">$<?php echo $fila['precio']; ?></p>
+                                            <form class="add-to-cart-form" method="POST" action="">
+                                            <input type="hidden" name="id_producto" value="<?php echo $fila['id']; ?>">
+                                            <button type="submit" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                <i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart
+                                            </button>
+                                            </form>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            <?php } } else {echo "No se encontraron registros.";} ?>
                         </div>
+                    </div>
                        
                         <div id="tab-3" class="tab-pane fade show p-0">
                             <div class="row g-4">
                                 <div class="col-lg-12">
                                     <div class="row g-4">
+                                    <?php if (mysqli_num_rows($botines) > 0) {  ?>
+                                        <?php do { ?>
                                         <div class="col-md-6 col-lg-4 col-xl-3">
                                             <div class="rounded position-relative fruite-item">
+                                           
                                                 <div class="fruite-img">
-                                                    <img src="img/Botin 501.jpg" class="img-fluid w-100 rounded-top" alt="">
+                                                    <img src="<?php echo $botines1['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
                                                 </div>
                                                 <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Botin 501</h4>
-                                                    <p>Productos 100% Mexicanos</p>
+                                                    <h4><?php echo $botines1['nombre']; ?></h4>
+                                                    <p><?php echo $botines1['descripcion']; ?></p>
                                                     <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                                    <p class="text-dark fs-5 fw-bold mb-0">$<?php echo $botines1['precio']; ?></p>
+                                                    <form class="add-to-cart-form" method="POST" action="">
+                                                    <input type="hidden" name="id_producto" value="<?php echo $botines1['id']; ?>">
+                                                    <button type="submit" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                        <i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart
+                                                    </button>
+                                                    </form>
                                                     </div>
                                                 </div>
+                                            
                                             </div>
                                         </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Botin_545.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Botin 545</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Botin_640.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Botin 640</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Botin 982.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Botin 982</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <?php } while($botines1 = mysqli_fetch_array($botines));?>
+                                        <?php } else { ?>
+                                            <p>No hay productos en esta categoría.</p>
+                                        <?php } ?>
                                     </div>
                                 </div>
                             </div>
@@ -363,34 +271,34 @@
                             <div class="row g-4">
                                 <div class="col-lg-12">
                                     <div class="row g-4">
+                                    <?php if (mysqli_num_rows($sombreros) > 0) {  ?>
+                                        <?php do { ?>
                                         <div class="col-md-6 col-lg-4 col-xl-3">
                                             <div class="rounded position-relative fruite-item">
+                                           
                                                 <div class="fruite-img">
-                                                    <img src="img/Stetson paja.jpg" class="img-fluid w-100 rounded-top" alt="">
+                                                    <img src="<?php echo $sombreros1['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
                                                 </div>
                                                 <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Stetson Paja</h4>
-                                                    <p>Productos 100% Mexicanos</p>
+                                                    <h4><?php echo $sombreros1['nombre']; ?></h4>
+                                                    <p><?php echo $sombreros1['descripcion']; ?></p>
                                                     <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                                    <p class="text-dark fs-5 fw-bold mb-0">$<?php echo $sombreros1['precio']; ?></p>
+                                                    <form class="add-to-cart-form" method="POST" action="">
+                                                    <input type="hidden" name="id_producto" value="<?php echo $sombreros1['id']; ?>">
+                                                    <button type="submit" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                        <i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart
+                                                    </button>
+                                                    </form>
                                                     </div>
                                                 </div>
+                                            
                                             </div>
                                         </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">    
-                                                    <img src="img/stetson fieltro.png" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Stetson Fieltro</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <?php } while($sombreros1 = mysqli_fetch_array($sombreros));?>
+                                        <?php } else { ?>
+                                            <p>No hay productos en esta categoría.</p>
+                                        <?php } ?>
                                     </div>
                                 </div>
                             </div>
@@ -399,34 +307,34 @@
                             <div class="row g-4">
                                 <div class="col-lg-12">
                                     <div class="row g-4">
+                                    <?php if (mysqli_num_rows($trajes) > 0) {  ?>
+                                        <?php do { ?>
                                         <div class="col-md-6 col-lg-4 col-xl-3">
                                             <div class="rounded position-relative fruite-item">
+                                           
                                                 <div class="fruite-img">
-                                                    <img src="img/charro.png" class="img-fluid w-100 rounded-top" alt="">
+                                                    <img src="<?php echo $trajes1['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
                                                 </div>
                                                 <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Traje Charro Negro</h4>
-                                                    <p>Productos 100% Mexicanos</p>
+                                                    <h4><?php echo $trajes1['nombre']; ?></h4>
+                                                    <p><?php echo $trajes1['descripcion']; ?></p>
                                                     <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                                    <p class="text-dark fs-5 fw-bold mb-0">$<?php echo $trajes1['precio']; ?></p>
+                                                    <form class="add-to-cart-form" method="POST" action="">
+                                                    <input type="hidden" name="id_producto" value="<?php echo $trajes1['id']; ?>">
+                                                    <button type="submit" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                        <i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart
+                                                    </button>
+                                                    </form>
                                                     </div>
                                                 </div>
+                                            
                                             </div>
                                         </div>
-                                        <div class="col-md-6 col-lg-4 col-xl-3">
-                                            <div class="rounded position-relative fruite-item">
-                                                <div class="fruite-img">
-                                                    <img src="img/Ade_Rojo.jfif" class="img-fluid w-100 rounded-top" alt="">
-                                                </div>
-                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                    <h4>Traje Adelita Rojo</h4>
-                                                    <p>Productos 100% Mexicanos</p>
-                                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <?php } while($trajes1 = mysqli_fetch_array($trajes));?>
+                                        <?php } else { ?>
+                                            <p>No hay productos en esta categoría.</p>
+                                        <?php } ?>
                                     </div>
                                 </div>
                             </div>
@@ -440,36 +348,33 @@
             <div class="container py-5">
                 <h1 class="mb-0">Camisas Vaqueras
                 </h1>
-                <div class="owl-carousel vegetable-carousel justify-content-center">
-                    <div class="border border-primary rounded position-relative vesitable-item">
+                <div class="owl-carousel vegetable-carousel justify-content-center">   
+                    <?php if (mysqli_num_rows($camisas) > 0) {  ?>
+                    <?php do { ?>
+                    <div class="border border-primary rounded position-relative "> <!-- Le quite vesitable item-->
                         <div class="vesitable-img">
-                            <img src="img/camisa1.png" class="img-fluid w-100 rounded-top" alt="">
+
+                            <img src="<?php echo $camisas1['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
                         </div>
                         <div class="p-4 rounded-bottom">
-                            <h4>Hannover Bordada Blanca</h4>
-                            <p>Productos 100% Mexicanos</p>
+                            <h4><?php echo $camisas1['nombre']; ?></h4>
+                            <p><?php echo $camisas1['descripcion']; ?></p>
                            <div class="d-flex justify-content-between flex-lg-wrap">
-                            <p class="text-dark fs-5 fw-bold mb-0">$950 </p>
-
-                            <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                           <p class="text-dark fs-5 fw-bold mb-0">$<?php echo $camisas1['precio']; ?></p>
+                            <form class="add-to-cart-form" method="POST" action="">
+                            <input type="hidden" name="id_producto" value="<?php echo $camisas1['id']; ?>">
+                            <button type="submit" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                <i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart
+                            </button>
+                            </form>
                             </div>
                         </div>
                     </div>
-                    <div class="border border-primary rounded position-relative vesitable-item">
-                        <div class="vesitable-img">
-                            <img src="img/Camisa2.jpg" class="img-fluid w-100 rounded-top" alt="">
-                        </div>
-                        <div class="p-4 rounded-bottom">
-                            <h4>Hannover Bordada Beige</h4>
-                            <p>Productos 100% Mexicanos</p>
-                                <p class="text-dark fs-5 fw-bold mb-0">$950 </p>
-                                <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-        ->
-
+                    <?php } while($camisas1 = mysqli_fetch_array($camisas));?>
+                    <?php } else { ?>
+                        <p>No hay camisas disponibles, vuelva pronto</p>
+                    <?php } ?>
+                </div>
 
         
         <div class="container-fluid banner bg-secondary my-5">
@@ -536,6 +441,15 @@
                 </div>
             </div>
         </div>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+
+<a id="cart-popover" tabindex="0" class="btn btn-lg btn-danger" role="button" data-toggle="popover" data-trigger="focus" title="Producto añadido" data-content="El producto ha sido añadido al carrito.">Ver mensaje</a>
+
                  <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">
             <div class="container py-5">
                 <div class="pb-4 mb-4" style="border-bottom: 1px solid rgba(226, 175, 24, 0.5) ;">
@@ -617,7 +531,34 @@
         
             <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>   
 
-        
+            <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const forms = document.querySelectorAll('.add-to-cart-form');
+    const messageContainer = document.getElementById('message-container');
+
+    forms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            fetch('', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                messageContainer.innerHTML = data;
+                // Actualizar el contenido del carrito si es necesario
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                messageContainer.innerHTML = 'Error al añadir el producto al carrito';
+            });
+        });
+    });
+});
+</script>
+
      
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

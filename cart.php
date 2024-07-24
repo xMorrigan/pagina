@@ -1,3 +1,46 @@
+<?php session_start();
+$varsession = $_SESSION['id'];
+if($varsession == null || $varsession== ''){
+    echo "Usted no tiene autorizacion";
+    die(); //termina la sesion para que 
+}
+include 'conexion.php';
+$total = 0;
+$envio = 250;
+$carritoQuery = "SELECT productos.*, carrito_usuarios.id as carrito_id , carrito_usuarios.talla as talla_usuario
+                 FROM productos 
+                 INNER JOIN carrito_usuarios ON productos.id = carrito_usuarios.id_producto 
+                 WHERE carrito_usuarios.id_sesion = '$varsession'";
+$carrito= mysqli_query($conexion, $carritoQuery);
+$carrito1 = mysqli_fetch_array($carrito);
+
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['carrito_id']) && isset($_POST['editar'])) {
+        $carrito_id = $_POST['carrito_id'];
+        $talla = $_POST['talla']; // Obtén la talla seleccionada del formulario
+
+        // Actualiza la talla en la base de datos
+        $updateQuery = "UPDATE carrito_usuarios SET talla='$talla' WHERE id='$carrito_id'";
+        if (mysqli_query($conexion, $updateQuery)) {
+            echo "<script> alert('Talla actualizada'); </script>";
+            echo "<script> window.location='cart.php'; </script>";
+        } else {
+            echo "Error al actualizar la talla: " . mysqli_error($conexion);
+        }
+    } elseif (isset($_POST['carrito_id'])) {
+        $carrito_id = $_POST['carrito_id'];
+        $deleteQuery = "DELETE FROM carrito_usuarios WHERE id='$carrito_id'";
+        if (mysqli_query($conexion, $deleteQuery)) {
+            header('Location: cart.php');
+        } else {
+            echo "Error al eliminar el producto: " . mysqli_error($conexion);
+        }
+    } else {
+        echo "Operación no permitida.";
+    }
+}  
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -25,7 +68,18 @@
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
-¿    <link href="css/style.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script language="javascript">
+        function preguntar(){
+            var elimina = confirm("¿Desea eliminar el registro?");
+            if(elimina){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -130,132 +184,31 @@
                           <tr>
                             <th scope="col">Productos</th>
                             <th scope="col">Nombre</th>
-                            <th scope="col">Talla</th>
                             <th scope="col">Precio</th>
                             <th scope="col">Cantidad</th>
                             <th scope="col">Total</th>
+                            <th scope="col">Talla</th>
+                            <th scope="col">Editar talla</th>
                             <th scope="col">Borrar</th>
                           </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">
-                                    <div class="d-flex align-items-center">
-                                        <img src="img/Botin 982.jpg" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="">
-                                    </div>
-                                </th>
-                                <td>
-                                    <p class="mb-0 mt-4">Botin 982</p>
-                                </td>
-                                <td>
-                                    <label for="fruits">Mexicana</label>
-                                        <select id="fruits" name="fruitlist" class="border-0 form-select-sm bg-light me-3" form="fruitform">
-                                        <option value="saab"></option>
-                                        <option value="volvo">5</option>
-                                        <option value="saab">6</option>
-                                        <option value="opel">7</option>
-                                        <option value="audi">8</option>
-                                        <option value="audi">9</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <p class="mb-0 mt-4">$499 </p>
-                                </td>
-                                <td>
-                                    <div class="input-group quantity mt-4" style="width: 100px;">
-                                        <div class="input-group-btn">
-                                            <button class="btn btn-sm btn-minus rounded-circle bg-light border" >
-                                            <i class="fa fa-minus"></i>
-                                            </button>
-                                        </div>
-                                        <input type="text" class="form-control form-control-sm text-center border-0" value="1">
-                                        <div class="input-group-btn">
-                                            <button class="btn btn-sm btn-plus rounded-circle bg-light border">
-                                                <i class="fa fa-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <p class="mb-0 mt-4">$499 </p>
-                                </td>
-                                <td>
-                                    <button class="btn btn-md rounded-circle bg-light border mt-4" >
-                                        <i class="fa fa-times text-danger"></i>
-                                    </button>
-                                </td>
-                            
-                            </tr>
-                            <tr>
-                                <th scope="row">
-                                    <div class="d-flex align-items-center">
-                                        <img src="img/stetson fieltro.png" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="" alt="">
-                                    </div>
-                                </th>
-                                <td>
-                                    <p class="mb-0 mt-4">Sombrero Stetson Fieltro Negro</p>
-                                </td>
-                                <td>
-                                    <label for="fruits">Mexicana</label>
-                                        <select id="fruits" name="fruitlist" class="border-0 form-select-sm bg-light me-3" form="fruitform">
-                                        <option value="saab"></option>
-                                        <option value="volvo">55</option>
-                                        <option value="saab">56</option>
-                                        <option value="opel">57</option>
-                                        <option value="audi">58</option>
-                                        <option value="audi">59</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <p class="mb-0 mt-4">$499 </p>
-                                </td>
-                                <td>
-                                    <div class="input-group quantity mt-4" style="width: 100px;">
-                                        <div class="input-group-btn">
-                                            <button class="btn btn-sm btn-minus rounded-circle bg-light border" >
-                                            <i class="fa fa-minus"></i>
-                                            </button>
-                                        </div>
-                                        <input type="text" class="form-control form-control-sm text-center border-0" value="1">
-                                        <div class="input-group-btn">
-                                            <button class="btn btn-sm btn-plus rounded-circle bg-light border">
-                                                <i class="fa fa-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <p class="mb-0 mt-4">$499 </p>
-                                </td>
-                                <td>
-                                    <button class="btn btn-md rounded-circle bg-light border mt-4" >
-                                        <i class="fa fa-times text-danger"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">
-                                    <div class="d-flex align-items-center">
-                                        <img src="img/Botin 501.jpg" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="" alt="">
-                                    </div>
-                                </th>
-                                <td>
-                                    <p class="mb-0 mt-4">Botin 501</p>
-                                </td>
-                                <td>
-                                    <label for="fruits">Mexicana</label>
-                                        <select id="fruits" name="fruitlist" class="border-0 form-select-sm bg-light me-3" form="fruitform">
-                                        <option value="saab"></option>
-                                        <option value="volvo">5</option>
-                                        <option value="saab">6</option>
-                                        <option value="opel">7</option>
-                                        <option value="audi">8</option>
-                                        <option value="audi">9</option>
 
-                                    </select>
+                        <?php if (mysqli_num_rows($carrito) > 0) {  ?>
+                            <?php do {                    
+                                ?>
+                                
+                            <tr>
+                                <th scope="row">
+                                    <div class="d-flex align-items-center">
+                                        <img src="<?php echo $carrito1['img']; ?>" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="">
+                                    </div>
+                                </th>
+                                <td>
+                                    <p class="mb-0 mt-4"><?php echo $carrito1['nombre']; ?></p>
                                 </td>
                                 <td>
-                                    <p class="mb-0 mt-4">$499 </p>
+                                    <p class="mb-0 mt-4"><?php echo $carrito1['precio']; ?></p>
                                 </td>
                                 <td>
                                     <div class="input-group quantity mt-4" style="width: 100px;">
@@ -273,14 +226,43 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <p class="mb-0 mt-4">$499 </p>
+                                    <p class="mb-0 mt-4"><?php echo $carrito1['precio']; ?> </p>
                                 </td>
                                 <td>
-                                    <button class="btn btn-md rounded-circle bg-light border mt-4" >
+                                <form method="POST" action="">
+                                    <label for="talla">Mexicana</label>
+                                        <select id="talla" name="talla" class="border-0 form-select-sm bg-light me-3">
+                                        <option value="<?php echo $carrito1['talla_usuario']; ?>"><?php echo $carrito1['talla_usuario']; ?></option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="hidden" name="editar">
+                                    <input type="hidden" name="carrito_id" value="<?php echo $carrito1['carrito_id']; ?>">
+                                    <button type="submit" class="btn btn-md rounded-circle bg-light border mt-4">
+                                        <i class="fa fa-check text-success"></i>
+                                    </button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="POST" action="">
+                                    <input type="hidden" name="carrito_id" value="<?php echo $carrito1['carrito_id']; ?>">
+                                    <button onclick="return preguntar()" type="submit" class="btn btn-md rounded-circle bg-light border mt-4">
                                         <i class="fa fa-times text-danger"></i>
                                     </button>
+                                    </form>
                                 </td>
+                                
+                            <?php $total += $carrito1['precio'];?>
                             </tr>
+                            <?php } while($carrito1 = mysqli_fetch_array($carrito));?>
+                                        <?php } else { ?>
+                                            <p>No hay productos en esta categoría.</p>
+                                        <?php } ?>
                         </tbody>
                     </table>
                 </div>
@@ -296,19 +278,19 @@
                                 <h1 class="display-6 mb-4">Total <span class="fw-normal">del carrito</span></h1>
                                 <div class="d-flex justify-content-between mb-4">
                                     <h5 class="mb-0 me-4">Subtotal:</h5>
-                                    <p class="mb-0">$1,497.00</p>
+                                    <p class="mb-0">$<?php echo $total; ?></p>
                                 </div>
                                 <div class="d-flex justify-content-between">
                                     <h5 class="mb-0 me-4">Envio</h5>
                                     <div class="">
-                                        <p class="mb-0">Precio promedio: $40.00</p>
+                                        <p class="mb-0">Precio promedio: $<?php echo $envio; ?></p>
                                     </div>
                                 </div>
                                 <p class="mb-0 text-end">Envio a Tabasco.</p>
                             </div>
                             <div class="py-4 mb-4 border-top border-bottom d-flex justify-content-between">
                                 <h5 class="mb-0 ps-4 me-4">Total</h5>
-                                <p class="mb-0 pe-4">$1,537.00</p>
+                                <p class="mb-0 pe-4">$<?php echo $total + $envio; ?></p>
                             </div>
                             <button class="btn border-secondary rounded-pill px-4 py-3 text-primary text-uppercase mb-4 ms-4" type="button">Proceed Checkout</button>
                         </div>
