@@ -1,8 +1,9 @@
 <?php session_start();
 $varsession = $_SESSION['id'];
 if($varsession == null || $varsession== ''){
-    echo "Usted no tiene autorizacion";
-    die(); //termina la sesion para que 
+    echo "<script>alert('Debes iniciar sesión para añadir al carrito');</script>";
+    echo "<script>window.location ='login.php';</script>";
+    exit();
 }
 include 'conexion.php';
 $id_persona = $_SESSION['id'];
@@ -77,7 +78,13 @@ if(isset($_REQUEST['eliminar'])){
                         <div class="col-md-6"><label class="labels">Estado/Región</label><input id="estado_region" name="estado_region" type="text" class="form-control" <?php echo "value='".(($reg['estado_region'] == "S/D") ? '' : $reg['estado_region'])."' "; ?> placeholder="Estado"></div>
                     </div>
                     <div class="mt-5 px-10 text-center"><button class="btn btn-primary profile-button" type="submit">Save Profile</button> </form>
-                    <a onclick="return preguntar()" href="profile.php?eliminar=<?php echo $reg['id']; ?>" class="btn btn-primary">Eliminar Profile</a></div>
+                    <a onclick="return preguntar()" href="profile.php?eliminar=<?php echo $reg['id']; ?>" class="btn btn-primary">Eliminar Profile</a>
+                    <a onclick="cerrarSesion()" class="btn btn-primary">Cerrar sesión</a>
+                    <script>
+                    function cerrarSesion() {
+                        window.location.href = 'logout.php';
+                    }
+                    </script></div>
                 </div>
             </div>
                 </div>

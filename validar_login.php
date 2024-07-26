@@ -21,12 +21,16 @@ if ($filas > 0) {
     $_SESSION['email'] = $datos['email'];
     $_SESSION['password'] = $datos['password'];
     $_SESSION['estado_region'] = $datos['estado_region'];
+    $_SESSION['rol'] = $datos['rol'];
 
-    if ($filas) {
-        $_SESSION['login_message'] = "Inicio de sesión exitoso";
-        header("location: index.php");
+    $_SESSION['login_message'] = "Inicio de sesión exitoso";
+
+    if ($datos['rol'] == 'admin') {
+        header("Location: dashboard.php");
+    } else if ($datos['rol'] == 'user') {
+        header("Location: index.php");
     } else {
-        echo "Error en la consulta: " . mysqli_error($conexion);
+        echo "No tiene permisos";
     }
 } else {
     mysqli_close($conexion);
@@ -36,4 +40,3 @@ if ($filas > 0) {
 }
 
 mysqli_free_result($usuarios);
-?>

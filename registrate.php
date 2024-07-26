@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre'])) {
     if ($password !== $passwordC) {
         echo "<script>alert('Las contraseñas no coinciden');</script>";
     } else {
-        $insertar = "INSERT INTO personas (nombre, apellidos, aumero, direccion, codigo_postal, area, email, password, estado_region) VALUES ('$nombre', '$apellidos', '5', 'S/D', 'S/D', 'S/D', '$email', '$password', 'S/D')";
+        $insertar = "INSERT INTO personas (nombre, apellidos, aumero, direccion, codigo_postal, area, email, password, estado_region, rol) VALUES ('$nombre', '$apellidos', '5', 'S/D', 'S/D', 'S/D', '$email', '$password', 'S/D', 'user')";
         if (mysqli_query($conexion, $insertar)) {
             echo "<script>alert('Se ha registrado exitosamente'); window.location='login.php';</script>";
         } 
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre'])) {
   
 			<div class="container-login100-form-btn">
 			  <div class="wrap-login100-form-btn">
-				<a href="index.html" class="login100-form-bgbtn">
+				<a href="index.php" class="login100-form-bgbtn">
 				  <div class="login100-form-bgbtn"></div>
 				</a>
 				<button class="login100-form-btn"  type="submit" onclick="validar_registro(event)">Registrar</button>
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre'])) {
 				Ya tienes una cuenta?
 			  </span>
   
-			  <a class="txt2" href="login.html">>
+			  <a class="txt2" href="login.php">>
 				Inicia sesion
 			  </a>
 			</div>

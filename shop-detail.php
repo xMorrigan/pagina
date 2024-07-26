@@ -1,3 +1,79 @@
+<?php
+session_start();
+include 'conexion.php';
+
+
+if (isset($_GET['id'])) {
+    $id_producto = $_GET['id'];
+    
+    // Obtener los datos del producto desde la base de datos
+    $productoQuery = "SELECT * FROM productos WHERE id = '$id_producto'";
+    $productoResult = mysqli_query($conexion, $productoQuery);
+    $producto = mysqli_fetch_array($productoResult);
+} else {
+    // Redirigir a la página principal si no se proporciona un ID de producto
+    header('Location: index.php');
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id_usuario = $_SESSION['id'];
+    $id_producto = $_POST['id_producto'];
+    $cantidad = isset($_POST['cantidad']) ? (int)$_POST['cantidad'] : 0;
+    $talla = $_POST['talla'];
+
+    // Verificar que el id_producto y la talla no estén vacíos
+    if (empty($id_producto) || empty($talla) || $cantidad <= 0) {
+        echo "Datos incompletos.";
+        exit();
+    }
+
+    // Verificar el stock disponible
+    $stockQuery = "SELECT existencia FROM productos WHERE id = '$id_producto'";
+    $stockResult = mysqli_query($conexion, $stockQuery);
+    $stockData = mysqli_fetch_array($stockResult);
+    $stock_disponible = $stockData['existencia'];
+
+    if ($stock_disponible >= $cantidad) {
+        // Verificar si el producto ya está en el carrito
+        $checkCarritoQuery = "SELECT * FROM carrito_usuarios WHERE id_sesion='$id_usuario' AND id_producto='$id_producto' AND talla='$talla'";
+        $result = mysqli_query($conexion, $checkCarritoQuery);
+
+        if (mysqli_num_rows($result) > 0) {
+            // Producto ya está en el carrito, actualizar la cantidad
+            $updateQuery = "UPDATE carrito_usuarios SET cantidad = cantidad + '$cantidad' WHERE id_sesion='$id_usuario' AND id_producto='$id_producto' AND talla='$talla'";
+            if (mysqli_query($conexion, $updateQuery)) {
+                // Actualizar el stock en la tabla de productos
+                $nuevoStock = $stock_disponible - $cantidad;
+                $updateStockQuery = "UPDATE productos SET existencia = '$nuevoStock' WHERE id = '$id_producto'";
+                mysqli_query($conexion, $updateStockQuery);
+
+                $_SESSION['toast_message'] = 'Cantidad actualizada en el carrito';
+            } else {
+                echo "Error al actualizar la cantidad: " . mysqli_error($conexion);
+            }
+        } else {
+            // Producto no está en el carrito, insertar nuevo registro con la cantidad seleccionada
+            $insertQuery = "INSERT INTO carrito_usuarios (id_sesion, id_producto, talla, cantidad) VALUES ('$id_usuario', '$id_producto', '$talla', '$cantidad')";
+            if (mysqli_query($conexion, $insertQuery)) {
+                // Actualizar el stock en la tabla de productos
+                $nuevoStock = $stock_disponible - $cantidad;
+                $updateStockQuery = "UPDATE productos SET existencia = '$nuevoStock' WHERE id = '$id_producto'";
+                mysqli_query($conexion, $updateStockQuery);
+
+                $_SESSION['toast_message'] = 'Producto añadido al carrito';
+            } else {
+                echo "Error al añadir el producto: " . mysqli_error($conexion);
+            }
+        }
+    } else {
+        $_SESSION['toast_message'] = 'Stock insuficiente';
+    }
+    
+    header('Location: shop-detail.php?id=' . $id_producto);
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -54,31 +130,31 @@
         </div>
         <div class="container px-0">
             <nav class="navbar navbar-light bg-white navbar-expand-xl">
-                <a href="index.html" class="navbar-brand"><h1 class="text-primary display-6">La Ocasión </h1></a>
+                <a href="index.php" class="navbar-brand"><h1 class="text-primary display-6">La Ocasión </h1></a>
                 <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                     <span class="fa fa-bars text-primary"></span>
                 </button>
                 <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                     <div class="navbar-nav mx-auto">
-                        <a href="index.html" class="nav-item nav-link active">Inicio</a>
-                        <a href="shop.html" class="nav-item nav-link">Tienda</a>
-                        <a href="shop-detail.html" class="nav-item nav-link">Productos</a>
+                        <a href="index.php" class="nav-item nav-link active">Inicio</a>
+                        <a href="shop.php" class="nav-item nav-link">Tienda</a>
+                        <a href="shop-detail.php" class="nav-item nav-link">Productos</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Otras Paginas</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
-                                <a href="cart.html" class="dropdown-item">Carrito</a>
-                                <a href="chackout.html" class="dropdown-item">Revisar Compra</a>
+                                <a href="cart.php" class="dropdown-item">Carrito</a>
+                                <a href="chackout.php" class="dropdown-item">Revisar Compra</a>
                             </div>
                         </div>
                         <a href="contact.html" class="nav-item nav-link">Contactos</a>
                     </div>
                     <div class="d-flex m-3 me-0">
                         <button class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fas fa-search text-primary"></i></button>
-                        <a href="cart.html" class="position-relative me-4 my-auto">
+                        <a href="cart.php" class="position-relative me-4 my-auto">
                             <i class="fa fa-shopping-bag fa-2x"></i>
                             <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">3</span>
                         </a>
-                        <a href="login.html" class="my-auto">
+                        <a href="login.php" class="my-auto">
                             <i class="fas fa-user fa-2x"></i>
                         </a>
                     </div>
@@ -131,14 +207,14 @@
                             <div class="col-lg-6">
                                 <div class="border rounded">
                                     <a href="#">
-                                        <img src="img/Sombrero_1.jpg" class="img-fluid rounded" alt="Image">
+                                        <img  src="<?php echo $producto['img']; ?>" class="img-fluid rounded" alt="Image">
                                     </a>
                                 </div>
                             </div>
                             <div class="col-lg-6">
-                                <h4 class="fw-bold mb-3">Sombrero Ranger Lino Blanco</h4>
-                                <p class="mb-3">Categoria: Sombreros</p>
-                                <h5 class="fw-bold mb-3">499,99 $</h5>
+                                <h4 class="fw-bold mb-3"><?php echo $producto['nombre']; ?></h4>
+                                <p class="mb-3">Categoria: <?php echo $producto['categoria']; ?></p>
+                                <h5 class="fw-bold mb-3"> $<?php echo $producto['precio']; ?></h5>
                                 <div class="d-flex mb-4">
                                     <i class="fa fa-star text-secondary"></i>
                                     <i class="fa fa-star text-secondary"></i>
@@ -146,22 +222,37 @@
                                     <i class="fa fa-star text-secondary"></i>
                                     <i class="fa fa-star"></i>
                                 </div>
-                                <p class="mb-4">Este elegante sombrero de vaquero está confeccionado con fieltro de alta calidad, ofreciendo tanto estilo como durabilidad.</p>
-                                <p class="mb-4">Su diseño clásico presenta una corona alta y un ala ancha, ideal para protegerse del sol mientras mantiene un aspecto auténtico y sofisticado.</p>
+                                <p class="mb-4"><?php echo $producto['descripcion']; ?></p>
+                                <form class="add-to-cart-form" method="POST" action="">
                                 <div class="input-group quantity mb-5" style="width: 100px;">
                                     <div class="input-group-btn">
-                                        <button class="btn btn-sm btn-minus rounded-circle bg-light border" >
+                                        <button id="buttonRes" class="btn btn-sm btn-minus rounded-circle bg-light border" >
                                             <i class="fa fa-minus"></i>
                                         </button>
                                     </div>
-                                    <input type="text" class="form-control form-control-sm text-center border-0" value="1">
+                                    <input id="cantidad" name="cantidad" type="text" class="mb-5 form-control form-control-sm text-center border-0" value="1">
                                     <div class="input-group-btn">   
-                                        <button class="btn btn-sm btn-plus rounded-circle bg-light border">
+                                        <button id="buttonSum" class="btn btn-sm btn-plus rounded-circle bg-light border">
                                             <i class="fa fa-plus"></i>
                                         </button>
                                     </div>
+                                    <td class="px-4">
+                                    <label for="talla">Talla</label>
+                                        <select id="talla" name="talla" class="border-0 form-select-sm bg-light me-3">
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                    </select>
+                                </td>
                                 </div>
-                                <a href="#" class="btn border border-secondary rounded-pill px-4 py-2 mb-4 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Agregar al carrito</a>
+                                
+                                    <input type="hidden" name="id_producto" value="<?php echo $producto['id']; ?>">
+                                    <button type="submit" class="btn border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
+                                        <i class="fa fa-shopping-bag me-2 text-primary"></i> Agregar al carrito
+                                    </button>
+                                </form>
                             </div>
                             <div class="col-lg-12">
                                 <nav>
@@ -176,9 +267,7 @@
                                 </nav>
                                 <div class="tab-content mb-5">
                                     <div class="tab-pane active" id="nav-about" role="tabpanel" aria-labelledby="nav-about-tab">
-                                        <p>Añade un toque de auténtico estilo vaquero a tu guardarropa con este magnífico sombrero de fieltro beige. </p>
-                                        <p> Meticulosamente confeccionado, este sombrero combina la tradición del diseño occidental con materiales modernos de alta calidad,
-                                            asegurando que luzcas espectacular en cualquier ocasión.</p>
+                                        <p> <?php echo $producto['descripcion']; ?></p>
                                         <div class="px-2">
                                             <div class="row g-4">
                                                 <div class="col-6">
@@ -458,6 +547,17 @@
         </div>
         <!-- Single Product End -->
     
+        <div class="z-3 toast-container position-fixed bottom-0  end-0 p-3">
+            <div id="liveToast" class="toast bg-warning" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto text-danger">Notificación</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body text-dark">
+                    Mensaje del Toast.
+                </div>
+            </div>
+        </div>
 
    
         <!-- Footer Start -->
@@ -550,7 +650,33 @@
         <!-- Back to Top -->
         <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>   
 
-        
+        <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar incremento y decremento de cantidad
+    function updateQuantity(change) {
+        var cantidadInput = document.getElementById('cantidad');
+        var currentQuantity = parseInt(cantidadInput.value);
+
+        if (!isNaN(currentQuantity)) {
+            var newQuantity = currentQuantity + change;
+            if (newQuantity > 0) { // Evitar cantidades negativas
+                cantidadInput.value = newQuantity;
+            }
+        }
+    }
+
+    // Obtener los botones de incremento y decremento
+    document.getElementById('buttonRes').addEventListener('click', function(event) {
+        event.preventDefault(); // Evitar el comportamiento predeterminado
+        updateQuantity(-1);
+    });
+
+    document.getElementById('buttonSum').addEventListener('click', function(event) {
+        event.preventDefault(); // Evitar el comportamiento predeterminado
+        updateQuantity(1);
+    });
+});
+</script>
     <!-- JavaScript Libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -561,6 +687,34 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+        console.log("DOM fully loaded and parsed");
+        <?php if(isset($_SESSION['toast_message'])): ?>
+            var toastEl = document.getElementById('liveToast');
+            console.log("toastEl:", toastEl); 
+            if (toastEl) {
+                console.log("Toast element found");
+                var toastBody = toastEl.querySelector('.toast-body');
+                console.log("toastBody:", toastBody); 
+                if (toastBody) {
+                    toastBody.innerHTML = "<?php echo $_SESSION['toast_message']; ?>";
+
+                    var toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                    
+                    <?php unset($_SESSION['toast_message']); ?>
+                } else {
+                    console.log("Toast body element not found");
+                }
+            } else {
+                console.log("Toast element not found");
+            }
+        <?php endif; ?>
+    });
+
+        </script>
     </body>
 
 </html>

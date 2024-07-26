@@ -1,3 +1,65 @@
+<?php session_start();
+$varsession = $_SESSION['id'];
+if($varsession == null || $varsession== ''){
+    echo "<script>alert('Debes iniciar sesión para añadir al carrito');</script>";
+    echo "<script>window.location ='login.php';</script>";
+    exit();
+}
+include 'conexion.php';
+
+$productosC = "SELECT * FROM productos";
+$productos = mysqli_query($conexion, $productosC);
+$productos1 = mysqli_fetch_array($productos);
+$busqueda = isset($_GET['busqueda']) ? $_GET['busqueda'] : '';
+$consulta_busqueda = "SELECT * FROM productos WHERE nombre LIKE '%$busqueda%'";
+$resultado_busqueda = mysqli_query($conexion, $consulta_busqueda);
+
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id'])) {
+    $id_usuario = $_SESSION['id'];
+    $id_producto = $_POST['id'];
+    $cantidad = 1;
+    $talla = isset($_POST['talla']) ? $_POST['talla'] : NULL; // Asegúrate de manejar la talla si es necesaria
+
+       // Verificar el stock disponible
+       $stockQuery = "SELECT existencia FROM productos WHERE id = '$id_producto'";
+       $stockResult = mysqli_query($conexion, $stockQuery);
+       $stockData = mysqli_fetch_array($stockResult);
+   
+       if ($stockData['existencia'] > 0) {
+           // Verificar si el producto ya está en el carrito
+           $checkCarritoQuery = "SELECT * FROM carrito_usuarios WHERE id_sesion='$id_usuario' AND id_producto='$id_producto' AND talla='$talla'";
+           $result = mysqli_query($conexion, $checkCarritoQuery);
+   
+           if (mysqli_num_rows($result) > 0) {
+               // Producto ya está en el carrito, actualizar la cantidad
+               $updateQuery = "UPDATE carrito_usuarios SET cantidad = cantidad + 1 WHERE id_sesion='$id_usuario' AND id_producto='$id_producto' AND talla='$talla'";
+               if (mysqli_query($conexion, $updateQuery)) {
+                $_SESSION['toast_message'] = 'Cantidad actualizada en el carrito';
+               } else {
+                   echo "Error al actualizar la cantidad: " . mysqli_error($conexion);
+               }
+           } else {
+               // Producto no está en el carrito, insertar nuevo registro con cantidad 1
+               $insertQuery = "INSERT INTO carrito_usuarios (id_sesion, id_producto, talla, cantidad) VALUES ('$id_usuario', '$id_producto', '$talla', 1)";
+               if (mysqli_query($conexion, $insertQuery)) {
+                $_SESSION['toast_message'] = 'Producto añadido al carrito';
+               } else {
+                   echo "Error al añadir el producto: " . mysqli_error($conexion);
+               }
+           }
+   
+           // Reducir el stock disponible
+           $nuevoStock = $stockData['existencia'] - 1;
+           $updateStockQuery = "UPDATE productos SET existencia = '$nuevoStock' WHERE id = '$id_producto'";
+           mysqli_query($conexion, $updateStockQuery);
+   
+       } else {
+        $_SESSION['toast_message'] = 'Stock insuficiente';
+           
+       }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -54,31 +116,31 @@
         </div>
         <div class="container px-0">
             <nav class="navbar navbar-light bg-white navbar-expand-xl">
-                <a href="index.html" class="navbar-brand"><h1 class="text-primary display-6">La Ocasión </h1></a>
+                <a href="index.php" class="navbar-brand"><h1 class="text-primary display-6">La Ocasión </h1></a>
                 <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                     <span class="fa fa-bars text-primary"></span>
                 </button>
                 <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                     <div class="navbar-nav mx-auto">
-                        <a href="index.html" class="nav-item nav-link active">Inicio</a>
-                        <a href="shop.html" class="nav-item nav-link">Tienda</a>
-                        <a href="shop-detail.html" class="nav-item nav-link">Productos</a>
+                        <a href="index.php" class="nav-item nav-link active">Inicio</a>
+                        <a href="shop.php" class="nav-item nav-link">Tienda</a>
+                        <a href="shop-detail.php" class="nav-item nav-link">Productos</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Otras Paginas</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
-                                <a href="cart.html" class="dropdown-item">Carrito</a>
-                                <a href="chackout.html" class="dropdown-item">Revisar Compra</a>
+                                <a href="cart.php" class="dropdown-item">Carrito</a>
+                                <a href="chackout.php" class="dropdown-item">Revisar Compra</a>
                             </div>
                         </div>
                         <a href="contact.html" class="nav-item nav-link">Contactos</a>
                     </div>
                     <div class="d-flex m-3 me-0">
                         <button class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fas fa-search text-primary"></i></button>
-                        <a href="cart.html" class="position-relative me-4 my-auto">
+                        <a href="cart.php" class="position-relative me-4 my-auto">
                             <i class="fa fa-shopping-bag fa-2x"></i>
                             <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">3</span>
                         </a>
-                        <a href="Profile.html" class="my-auto">
+                        <a href="Profile.php" class="my-auto">
                             <i class="fas fa-user fa-2x"></i>
                         </a>
                     </div>
@@ -114,7 +176,7 @@
         <div class="container-fluid page-header py-5">
             <h1 class="text-center text-white display-6">Tienda</h1>
             <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
                 <li class="breadcrumb-item"><a href="#">Pagina</a></li>
                 <li class="breadcrumb-item active text-white">Tienda</li>
             </ol>
@@ -131,11 +193,16 @@
                         <div class="row g-4">
                             <div class="col-xl-3">
                                 <div class="input-group w-100 mx-auto d-flex">
-                                    <input type="search" class="form-control p-3" placeholder="Palabra clave" aria-describedby="search-icon-1">
-                                    <span id="search-icon-1" class="input-group-text p-3"><i class="fa fa-search"></i></span>
+                                    <form method="GET" action="shop.php">
+                                        <div class="row mb-10">
+                                        <input type="search" name="busqueda" class="col form-control p-3" placeholder="Buscar" aria-describedby="search-icon-1">
+                                        <button class="col input-group-text p-3" ><i class="fa fa-search"></i></button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                             <div class="col-6"></div>
+                            <!--
                             <div class="col-xl-3">
                                 <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between mb-4">
                                     <label for="fruits">Filtro por defecto:</label>
@@ -146,10 +213,10 @@
                                         <option value="audi">Economico</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                         <div class="row g-4">
-                            <div class="col-lg-3">
+                            <!-- <div class="col-lg-3">
                                 <div class="row g-4">
                                     <div class="col-lg-12">
                                         <div class="mb-3">
@@ -288,144 +355,42 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
+
                             <div class="col-lg-9">
-                                <div class="row g-4 justify-content-center">
+                                <div class="row g-4 justify-content-center mt-5">
+                                <?php if (mysqli_num_rows($resultado_busqueda) > 0) { ?>
+                                    <?php while ($resultado = mysqli_fetch_array($resultado_busqueda)) { ?>
                                     <div class="col-md-6 col-lg-6 col-xl-4">
                                         <div class="rounded position-relative fruite-item">
+                                        <a href="shop-detail.php?id=<?php echo $resultado['id']; ?>">
                                             <div class="fruite-img">
-                                                <img src="img/Botin_640.jpg" class="img-fluid w-100 rounded-top" alt="">
+                                                <img src="<?php echo $resultado['img']; ?>"  class="img-fluid w-100 rounded-top" alt="">
                                             </div>
                                             <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Botin Establo 640</h4>
-                                                <p>Productos 100% Mexicanos</p>
+                                                <h4><?php echo $resultado['nombre']; ?></h4>
+                                                <p><?php echo $resultado['descripcion']; ?></p>
                                                 <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                                    <p class="text-dark fs-5 fw-bold mb-0"><?php echo $resultado['precio']; ?> </p>
+                                                    <form class="add-to-cart-form" method="POST" action="">
+                                                    <input type="hidden" name="id" value="<?php echo $resultado['id']; ?>">
+                                                    <button type="submit" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                        <i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart
+                                                    </button>
+                                                    </form>
                                                 </div>
                                             </div>
+                                            </a>
                                         </div>
                                     </div>
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="img/Botin_545.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                            </div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Botin 545</h4>
-                                                <p>Productos 100% Mexicanos</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="img/Botin 501.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                            </div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Botin 501</h4>
-                                                <p>Productos 100% Mexicanos</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="img/camisa1.png" class="img-fluid w-100 rounded-top" alt="">
-                                            </div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Hannover Blanca</h4>
-                                                <p>Productos 100% Mexicanos</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="img/Camisa2.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                            </div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Hannover Hueso Bordada</h4>
-                                                <p>Productos 100% Mexicanos</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="img/Camisa3.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                            </div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Hannover Hueso Bordado Café</h4>
-                                                <p>Productos 100% Mexicanos</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="img/Sombrero_1.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                            </div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Ranger Lino</h4>
-                                                <p>Productos 100% Mexicanos</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="img/Stetson fieltro.jfif" class="img-fluid w-100 rounded-top" alt="">
-                                            </div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Stetson Fieltro Negro</h4>
-                                                <p>Productos 100% Mexicanos</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="img/Stetson paja.jpg" class="img-fluid w-100 rounded-top" alt="">
-                                            </div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Stetson Paja Blanco</h4>
-                                                <p>Productos 100% Mexicanos</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$499.99 </p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <?php } ?>
+                                    <?php } else { ?>
+                                        <p>No hay productos disponibles.</p>
+                                    <?php } ?>
+                                   
+
+
+                                    <!-- 
                                     <div class="col-12">
                                         <div class="pagination d-flex justify-content-center mt-5">
                                             <a href="#" class="rounded">&laquo;</a>
@@ -438,6 +403,7 @@
                                             <a href="#" class="rounded">&raquo;</a>
                                         </div>
                                     </div>
+                                    -->
                                 </div>
                             </div>
                         </div>
@@ -446,7 +412,32 @@
             </div>
         </div>
         <!-- Fruits Shop End-->
+ 
+        <div class="z-3 toast-container position-fixed bottom-0  end-0 p-3">
+            <div id="liveToast" class="toast bg-warning" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto text-danger">Notificación</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body text-dark">
+                    Mensaje del Toast.
+                </div>
+            </div>
+        </div>
 
+        <script>
+            document.addEventListener('DOMContentLoaded', (event) => {
+                <?php if(isset($_SESSION['toast_message'])): ?>
+                    var toastEl = document.getElementById('liveToast');
+                    var toastBody = toastEl.querySelector('.toast-body');
+                    toastBody.innerHTML = "<?php echo $_SESSION['toast_message']; ?>";
+
+                    var toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                    <?php unset($_SESSION['toast_message']); ?>
+                <?php endif; ?>
+            });
+        </script>
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">
             <div class="container py-5">
@@ -532,11 +523,9 @@
         <!-- Copyright End -->
 
 
-
         <!-- Back to Top -->
-        <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>   
+        <a href="#" class="z-0 btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>   
 
-        
     <!-- JavaScript Libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

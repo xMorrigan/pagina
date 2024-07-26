@@ -6,79 +6,71 @@ if($varsession == null || $varsession== ''){
     exit();
 }
 include 'conexion.php';
-$total = 0;
-$envio = 250;
-$carritoQuery = "SELECT productos.*, carrito_usuarios.id as carrito_id , carrito_usuarios.talla as talla_usuario,carrito_usuarios.cantidad as cantidad_usuario
-                 FROM productos 
-                 INNER JOIN carrito_usuarios ON productos.id = carrito_usuarios.id_producto 
-                 WHERE carrito_usuarios.id_sesion = '$varsession' AND carrito_usuarios.cantidad > 0";
-$carrito= mysqli_query($conexion, $carritoQuery);
-$carrito1 = mysqli_fetch_array($carrito);
+$productosC = "SELECT * FROM personas";
+$productos = mysqli_query($conexion, $productosC);
+$productos1 = mysqli_fetch_array($productos);
+$busqueda = isset($_GET['busqueda']) ? $_GET['busqueda'] : '';
+$consulta_busqueda = "SELECT * FROM personas WHERE nombre LIKE '%$busqueda%'";
+$resultado_busqueda = mysqli_query($conexion, $consulta_busqueda);
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['id'])) { 
+    $nombre = $_POST['nombre'];
+    $apellidos = $_POST['apellidos'];
+    $aumero = $_POST['aumero'];
+    $direccion = $_POST['direccion'];
+    $codigo_postal = $_POST['codigo_postal'];
+    $area = $_POST['area'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $passwordC = $_POST['passwordC'];
+    $estado_region = $_POST['estado_region'];
+    $rol = $_POST['rol'];
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['carrito_id']) && isset($_POST['editar'])) {
-        $carrito_id = $_POST['carrito_id'];
-        $nueva_cantidad = $_POST['cantidad']; 
-        $talla = $_POST['talla']; 
-
-        // Obtener la cantidad actual y el id del producto del carrito
-        $carrito_info_query = "SELECT id_producto, cantidad FROM carrito_usuarios WHERE id = '$carrito_id'";
-        $carrito_info_result = mysqli_query($conexion, $carrito_info_query);
-        $carrito_info = mysqli_fetch_array($carrito_info_result);
-        $id_producto = $carrito_info['id_producto'];
-        $cantidad_actual = $carrito_info['cantidad'];
-
-        // Verificar el stock disponible
-        $stockQuery = "SELECT existencia FROM productos WHERE id = '$id_producto'";
-        $stockResult = mysqli_query($conexion, $stockQuery);
-        $stockData = mysqli_fetch_array($stockResult);
-        $stock_disponible = $stockData['existencia'];
-
-        // Calcular la diferencia en la cantidad
-        $diferencia_cantidad = $nueva_cantidad - $cantidad_actual;
-
-        if ($stock_disponible >= $diferencia_cantidad) {
-            // Actualizar la cantidad en el carrito
-            $updateCarritoQuery = "UPDATE carrito_usuarios SET talla='$talla', cantidad='$nueva_cantidad' WHERE id='$carrito_id'";
-            if (mysqli_query($conexion, $updateCarritoQuery)) {
-                // Actualizar el stock en la tabla de productos
-                $nuevoStock = $stock_disponible - $diferencia_cantidad;
-                $updateStockQuery = "UPDATE productos SET existencia = '$nuevoStock' WHERE id = '$id_producto'";
-                mysqli_query($conexion, $updateStockQuery);
-
-                echo "<script> alert('Datos actualizados'); </script>";
-                echo "<script> window.location='cart.php'; </script>";
-            } else {
-                echo "Error al actualizar el carrito: " . mysqli_error($conexion);
-            }
-        } else {
-            echo "<script> alert('Stock insuficiente'); </script>";
-        }
-    } elseif (isset($_POST['carrito_id'])) {
-        $carrito_id = $_POST['carrito_id'];
-
-        // Obtener la cantidad actual en el carrito y devolverla al stock
-        $cantidad_query = "SELECT cantidad, id_producto FROM carrito_usuarios WHERE id='$carrito_id'";
-        $cantidad_result = mysqli_query($conexion, $cantidad_query);
-        $cantidad_data = mysqli_fetch_array($cantidad_result);
-        $cantidad_actual = $cantidad_data['cantidad'];
-        $id_producto = $cantidad_data['id_producto'];
-
-        // Eliminar el producto del carrito
-        $deleteQuery = "DELETE FROM carrito_usuarios WHERE id='$carrito_id'";
-        if (mysqli_query($conexion, $deleteQuery)) {
-            // Devolver la cantidad eliminada al stock
-            $updateStockQuery = "UPDATE productos SET existencia = existencia + '$cantidad_actual' WHERE id = '$id_producto'";
-            mysqli_query($conexion, $updateStockQuery);
-
-            header('Location: cart.php');
-        } else {
-            echo "Error al eliminar el producto: " . mysqli_error($conexion);
-        }
+    if ($password !== $passwordC) {
+        echo "<script>alert('Las contraseñas no coinciden');</script>";
     } else {
-        echo "Operación no permitida.";
+        $insertar = "INSERT INTO personas (nombre, apellidos, aumero, direccion, codigo_postal, area, email, password, estado_region, rol) VALUES ('$nombre', '$apellidos', '$aumero', '$direccion', '$codigo_postal', '$area', '$email', '$password', '$estado_region', '$rol')";
+        if (mysqli_query($conexion, $insertar)) {
+            echo "<script>alert('Se ha registrado exitosamente'); window.location='cat_usuarios.php';</script>";
+        } 
     }
+}
+
+if(isset($_REQUEST['eliminar'])){
+    $eliminar = $_REQUEST['eliminar'];
+    mysqli_query($conexion,"delete from personas where id=$eliminar");
+    echo "<script> alert('Usuario eliminado'); </script>";
+    echo "<script> window.location='cat_usuarios.php' </script>";
+}
+
+if(isset($_REQUEST['editar'])){
+    $editar = $_REQUEST['editar'];
+    $registro = mysqli_query($conexion,"select * from personas where id= $editar");
+    $reg = mysqli_fetch_array($registro);}
+
+if(isset($_REQUEST['id'])){
+    $id = $_POST['id'];
+    $nombre = $_POST['nombre'];
+    $apellidos = $_POST['apellidos'];
+    $aumero = $_POST['aumero'];
+    $direccion = $_POST['direccion'];
+    $codigo_postal = $_POST['codigo_postal'];
+    $area = $_POST['area'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $passwordC = $_POST['passwordC'];
+    $estado_region = $_POST['estado_region'];
+    $rol = $_POST['rol'];
+    
+    if ($password !== $passwordC) {
+        echo "<script>alert('Las contraseñas no coinciden');</script>";
+    } else {
+        $insertar = "UPDATE personas SET nombre='$nombre',apellidos='$apellidos', aumero='$aumero', direccion= '$direccion', codigo_postal='$codigo_postal', area= '$area', email= '$email', password='$password', estado_region='$estado_region', rol='$rol' where id = '$id'";
+        if (mysqli_query($conexion, $insertar)) {
+            echo "<script>alert('Se ha actualizado exitosamente'); window.location='cat_usuarios.php';</script>";
+        } 
+    }
+
 }
 ?>
 <!DOCTYPE html>
@@ -86,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <head>
     <meta charset="utf-8">
-    <title>La Ocasión Botas y Sombreros</title>
+    <title>Usuarios</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -155,6 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="navbar-nav mx-auto">
                         <a href="index.php" class="nav-item nav-link active">Inicio</a>
                         <a href="shop.php" class="nav-item nav-link">Tienda</a>
+                        <a href="shop-detail.php" class="nav-item nav-link">Productos</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Otras Paginas</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
@@ -204,141 +197,112 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- Single Page Header start -->
         <div class="container-fluid page-header py-5">
-            <h1 class="text-center text-white display-6">Carrito</h1>
+            <h1 class="text-center text-white display-6">Usuarios</h1>
             <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="#">Inicio</a></li>
-                <li class="breadcrumb-item"><a href="#">Paginas</a></li>
-                <li class="breadcrumb-item active text-white">Carrito</li>
+                <li class="breadcrumb-item"><a href="dashboard.php">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="cat_usuarios.php">Usuarios</a></li>
             </ol>
         </div>
         <!-- Single Page Header End -->
 
 
         <!-- Cart Page Start -->
-        <div class="container-fluid py-5">
-            <div class="container py-5">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                          <tr>
-                            <th scope="col">Productos</th>
-                            <th scope="col">Nombre</th>
-                            <th scope="col">Precio</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Cantidad</th>
-                            <th scope="col">Talla</th>
-                            <th scope="col">Editar talla</th>
-                            <th scope="col">Borrar</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-
-                        <?php if (mysqli_num_rows($carrito) > 0) {  ?>
-                            <?php do {                    
-                                ?>
-                                
-                            <tr>
-                                <th scope="row">
-                                    <div class="d-flex align-items-center">
-                                        <img src="<?php echo $carrito1['img']; ?>" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="">
-                                    </div>
-                                </th>
-                                <td>
-                                    <p class="mb-0 mt-4"><?php echo $carrito1['nombre']; ?></p>
-                                </td>
-                                <td>
-                                    <p class="mb-0 mt-4"><?php echo $carrito1['precio']; ?></p>
-                                </td>
-                                <td>
-                                    <p class="mb-0 mt-4"><?php echo $carrito1['precio']; ?> </p>
-                                </td>
-                                <td>
-                                <form method="POST" action="">
-                                    <div class="input-group quantity mt-4" style="width: 100px;">
-                                        <div class="input-group-btn">
-                                            <button id="buttonRes-<?php echo $carrito1['carrito_id']; ?>" class="btn btn-sm btn-minus rounded-circle bg-light border" >
-                                            <i class="fa fa-minus"></i>
-                                            </button>
-                                        </div>
-                                        <input id="cantidad-<?php echo $carrito1['carrito_id']; ?>" name="cantidad" type="text" class="form-control form-control-sm text-center border-0" value="<?php echo $carrito1['cantidad_usuario']; ?>">
-                                        <div class="input-group-btn">
-                                            <button id="buttonSum-<?php echo $carrito1['carrito_id']; ?>" class="btn btn-sm btn-plus rounded-circle bg-light border">
-                                                <i class="fa fa-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <label for="talla">Mexicana</label>
-                                        <select id="talla" name="talla" class="border-0 form-select-sm bg-light me-3">
-                                        <option value="<?php echo $carrito1['talla_usuario']; ?>"><?php echo $carrito1['talla_usuario']; ?></option>
-                                        <option value="5" <?php echo ($carrito1['talla_usuario'] == 5) ? 'selected' : ''; ?>>5</option>
-                                        <option value="6" <?php echo ($carrito1['talla_usuario'] == 6) ? 'selected' : ''; ?>>6</option>
-                                        <option value="7" <?php echo ($carrito1['talla_usuario'] == 7) ? 'selected' : ''; ?>>7</option>
-                                        <option value="8" <?php echo ($carrito1['talla_usuario'] == 8) ? 'selected' : ''; ?>>8</option>
-                                        <option value="9" <?php echo ($carrito1['talla_usuario'] == 9) ? 'selected' : ''; ?>>9</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="hidden" name="editar">
-                                    <input type="hidden" name="carrito_id" value="<?php echo $carrito1['carrito_id']; ?>">
-                                    <button type="submit" class="btn btn-md rounded-circle bg-light border mt-4">
-                                        <i class="fa fa-check text-success"></i>
-                                    </button>
-                                    </form>
-                                </td>
-                                <td>
-                                    <form method="POST" action="">
-                                    <input type="hidden" name="carrito_id" value="<?php echo $carrito1['carrito_id']; ?>">
-                                    <button onclick="return preguntar()" type="submit" class="btn btn-md rounded-circle bg-light border mt-4">
-                                        <i class="fa fa-times text-danger"></i>
-                                    </button>
-                                    </form>
-                                </td>
-                                
-                            <?php
-                            $precio = $carrito1['precio'] * $carrito1['cantidad_usuario'];
-                            $total += $precio;?>
-                            </tr>
-                            <?php } while($carrito1 = mysqli_fetch_array($carrito));?>
-                                        <?php } else { ?>
-                                            <p>No hay productos en esta categoría.</p>
-                                        <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mt-5">
-                    <input type="text" class="border-0 border-bottom rounded me-5 py-3 mb-4" placeholder="Codigo de cupón">
-                    <button class="btn border-secondary rounded-pill px-4 py-3 text-primary" type="button">Aplicar cupón</button>
-                </div>
-                <div class="row g-4 justify-content-end">
-                    <div class="col-8"></div>
-                    <div class="col-sm-8 col-md-7 col-lg-6 col-xl-4">
-                        <div class="bg-light rounded">
-                            <div class="p-4">
-                                <h1 class="display-6 mb-4">Total <span class="fw-normal">del carrito</span></h1>
-                                <div class="d-flex justify-content-between mb-4">
-                                    <h5 class="mb-0 me-4">Subtotal:</h5>
-                                    <p class="mb-0">$<?php echo $total; ?></p>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <h5 class="mb-0 me-4">Envio</h5>
-                                    <div class="">
-                                        <p class="mb-0">Precio promedio: $<?php echo $envio; ?></p>
-                                    </div>
-                                </div>
-                                <p class="mb-0 text-end">Envio a Tabasco.</p>
-                            </div>
-                            <div class="py-4 mb-4 border-top border-bottom d-flex justify-content-between">
-                                <h5 class="mb-0 ps-4 me-4">Total</h5>
-                                <p class="mb-0 pe-4">$<?php echo $total + $envio; ?></p>
-                            </div>
-                            <button class="btn border-secondary rounded-pill px-4 py-3 text-primary text-uppercase mb-4 ms-4" type="button">Comprar</button>
-                        </div>
+        
+        <div class="container rounded bg-white mt-5 mb-5">
+        <div class="row">
+            <div class="col-md-5 border-right">
+                <div class="p-3 py-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3 mx-5">
+                        <h4 class="text-right">Usuarios</h4>
                     </div>
+                    
+                    <div class="row mt-2">
+                    <form  action="" method="post" id="registro" onsubmit="validar_registro(event)">
+                        <div class="col-md-6"><label class="labels">Nombre</label>
+                        <input id="nombre"  name="nombre" type="text" class="form-control" placeholder="Nombre"  <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['nombre']."' "; }?>></div>
+                        <div class="col-md-6"><label class="labels">Apellidos</label><input id="apellidos" name="apellidos" type="text" class="form-control" <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['apellidos']."' "; }?> placeholder="Apellidos"></div>
+                      
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12 mt-3">
+                            <label for="rol" class="labels">Rol</label>
+                            <select id="rol" name="rol" class="form-control">
+                                <option value="<?php if(isset($_REQUEST['editar'])){ echo $reg['rol']; }?>"><?php if(isset($_REQUEST['editar'])){ echo $reg['rol']; }?></option>
+                                <option value="user">Usuario</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12 mt-3"><label class="labels">Numero</label><input id="aumero" name="aumero" type="text" class="form-control" placeholder="Ingresa tu Número telefónico"  <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['aumero']."' "; }?>></div>
+                        <div class="col-md-12 mt-3"><label class="labels">Dirección</label><input id="direccion" name="direccion" type="text" class="form-control" placeholder="Ingresa tu dirección"  <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['direccion']."' "; }?>></div>
+                        <div class="col-md-12 mt-3"><label class="labels">Código Postal</label><input id="codigo_postal" name="codigo_postal" type="text" class="form-control" placeholder="Ingresa tu código postal"  <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['codigo_postal']."' "; }?>></div>
+                        <div class="col-md-12 mt-3"><label class="labels">Area</label><input id="area" name="area" type="text" class="form-control" placeholder="Ingresa tu colonia"  <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['area']."' "; }?>></div>
+                        <div class="col-md-12 mt-3"><label class="labels">Correo</label><input id="email" name="email" type="text" class="form-control" placeholder="Ingresa tu Correo Electronico"  <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['email']."' "; }?>></div>
+                        <div class="col-md-12 mt-3"><label class="labels">Contraseña</label><input id="password" name="password" type="password" class="form-control" placeholder="Ingresa una contraseña"  <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['password']."' "; }?>></div>
+                        <div class="col-md-12 mt-3"><label class="labels">Confirmación de contraseñas</label><input id="passwordC" name="passwordC" type="password" class="form-control" placeholder="Ingresa una contraseña"></div>
+                        <div class="col-md-12 mt-3"><label class="labels">Estado/Región</label><input id="estado_region" name="estado_region" type="text" class="form-control"  <?php if(isset($_REQUEST['editar'])){ echo "value='".$reg['estado_region']."' "; }?> placeholder="Estado"></div>    
+                    </div>
+                    <div class="mt-5 px-10 text-center">
+                    <input type="submit" class="btn btn-primary profile-button" <?php if(isset($_REQUEST['editar'])){ echo "value='Guardar'";}else{"value='Insertar'";}?> id="boton" >    
+                    <?php 
+                    if(isset($_REQUEST['editar'])) { 
+                        echo "<input type='hidden' name='id' value='".$reg['id']."'>"; }
+                    ?>
+                    </form>
+                   </div>
+                </div>
+                
+            </div>
+
+            <div class="input-group">
+                <form method="GET" action="cat_usuarios.php">
+                    <div class="row w-100 mb-10">
+                        <input name="busqueda" type="text" class="col form-control rounded" placeholder="Buscar" aria-label="Search" aria-describedby="search-addon" />
+                        <button type="submit" class="col btn btn-outline-primary" data-mdb-ripple-init><i class="fas fa-search"></i></button>
+                    </div>
+                </form>
+            </div>
+
+            <?php
+            if (mysqli_num_rows($resultado_busqueda) > 0) {
+            ?>
+            <table class="table">
+                <thead>
+                    <tr>
+                    <th scope="col">Clave</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Apellidos</th>
+                    <th scope="col">Correo</th>
+                    <th scope="col">Rol</th>
+                    <th scope="col">Eliminar</th>
+                    <th scope="col">Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php while ($resultado = mysqli_fetch_array($resultado_busqueda)) { ?>
+                    <tr>
+                    <th scope="row"><?php echo $resultado['id']; ?></th>
+                    <td><?php echo $resultado['nombre']; ?></td>
+                    <td><?php echo $resultado['apellidos']; ?></td>
+                    <td><?php echo $resultado['email']; ?></td>
+                    <td><?php echo $resultado['rol']; ?></td>
+                    <td><a onclick="return preguntar()" href="cat_usuarios.php?eliminar=<?php echo $resultado['id']; ?>">Eliminar</a></td>
+                    <td><a href="cat_usuarios.php?editar=<?php echo $resultado['id']; ?>">Editar</a></td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+                </table>
+                <?php } else { ?>
+                    <p>No se encontraron resultados para la búsqueda.</p>
+                <?php } ?>
                 </div>
             </div>
         </div>
+
+        
+    </div>
+    </div>
+    </div>
+
         <!-- Cart Page End -->
 
 

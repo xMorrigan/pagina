@@ -46,7 +46,7 @@
   
 			<div class="container-login100-form-btn">
 			  <div class="wrap-login100-form-btn">
-				<a href="index.html" class="login100-form-bgbtn">
+				<a href="index.php" class="login100-form-bgbtn">
 				  <div class="login100-form-bgbtn"></div>
 				</a>
 				<button name ="btningresar" class="login100-form-btn" type="sumbit" value="Iniciar Sesion" >Iniciar Sesion</button>
@@ -63,7 +63,7 @@
 				}
   
 				// Si la validación pasa, permite la redirección a index.html
-				window.location.href = "index.html";
+				window.location.href = "index.php";
 			  }
 			</script>
   

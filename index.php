@@ -1,9 +1,6 @@
 <?php session_start();
 $varsession = $_SESSION['id'];
-if($varsession == null || $varsession== ''){
-    echo "Usted no tiene autorizacion";
-    die(); //termina la sesion para que 
-}
+
 include 'conexion.php';
 
 $productosC = "SELECT * FROM productos ORDER BY id DESC LIMIT 9";
@@ -26,14 +23,47 @@ $camisas1 = mysqli_fetch_array($camisas);
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
     $id_usuario = $_SESSION['id'];
     $id_producto = $_POST['id_producto'];
+    $cantidad = 1;
+    $talla = isset($_POST['talla']) ? $_POST['talla'] : NULL; // Asegúrate de manejar la talla si es necesaria
 
-    $insertar = "INSERT INTO carrito_usuarios (id_sesion, id_producto) VALUES ('$id_usuario', '$id_producto')";
-    if (mysqli_query($conexion, $insertar)) {
-        echo "<script> alert('Producto añadido al carrito'); </script>";
-        header('Location: index.php');
-    } else {
-        echo "Error al añadir el producto: " . mysqli_error($conexion);
-    }
+       // Verificar el stock disponible
+       $stockQuery = "SELECT existencia FROM productos WHERE id = '$id_producto'";
+       $stockResult = mysqli_query($conexion, $stockQuery);
+       $stockData = mysqli_fetch_array($stockResult);
+   
+       if ($stockData['existencia'] > 0) {
+           // Verificar si el producto ya está en el carrito
+           $checkCarritoQuery = "SELECT * FROM carrito_usuarios WHERE id_sesion='$id_usuario' AND id_producto='$id_producto' AND talla='$talla'";
+           $result = mysqli_query($conexion, $checkCarritoQuery);
+   
+           if (mysqli_num_rows($result) > 0) {
+               // Producto ya está en el carrito, actualizar la cantidad
+               $updateQuery = "UPDATE carrito_usuarios SET cantidad = cantidad + 1 WHERE id_sesion='$id_usuario' AND id_producto='$id_producto' AND talla='$talla'";
+               if (mysqli_query($conexion, $updateQuery)) {
+                $_SESSION['toast_message'] = 'Cantidad actualizada en el carrito';
+               } else {
+                   echo "Error al actualizar la cantidad: " . mysqli_error($conexion);
+               }
+           } else {
+               // Producto no está en el carrito, insertar nuevo registro con cantidad 1
+               $insertQuery = "INSERT INTO carrito_usuarios (id_sesion, id_producto, talla, cantidad) VALUES ('$id_usuario', '$id_producto', '$talla', 1)";
+               if (mysqli_query($conexion, $insertQuery)) {
+                $_SESSION['toast_message'] = 'Producto añadido al carrito';
+               } else {
+                   echo "Error al añadir el producto: " . mysqli_error($conexion);
+               }
+           }
+
+           
+           $nuevoStock = $stockData['existencia'] - 1;
+           $updateStockQuery = "UPDATE productos SET existencia = '$nuevoStock' WHERE id = '$id_producto'";
+           mysqli_query($conexion, $updateStockQuery);
+   
+       } else {
+            $_SESSION['toast_message'] = 'Stock insuficiente';
+       }
+       header("Location: " . $_SERVER['PHP_SELF']);
+       exit();
 }
 ?>
 <!DOCTYPE html>
@@ -81,20 +111,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
             </div>
             <div class="container px-0">
                 <nav class="navbar navbar-light bg-white navbar-expand-xl">
-                    <a href="index.html" class="navbar-brand"><h1 class="text-primary display-6">La Ocasión </h1></a>
+                    <a href="index.php" class="navbar-brand"><h1 class="text-primary display-6">La Ocasión </h1></a>
                     <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                         <span class="fa fa-bars text-primary"></span>
                     </button>
                     <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                         <div class="navbar-nav mx-auto">
-                            <a href="index.html" class="nav-item nav-link active">Inicio</a>
-                            <a href="shop.html" class="nav-item nav-link">Tienda</a>
-                            <a href="shop-detail.html" class="nav-item nav-link">Productos</a>
+                            <a href="index.php" class="nav-item nav-link active">Inicio</a>
+                            <a href="shop.php" class="nav-item nav-link">Tienda</a>
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Otras Paginas</a>
                                 <div class="dropdown-menu m-0 bg-secondary rounded-0">
                                     <a href="cart.php" class="dropdown-item">Carrito</a>
-                                    <a href="chackout.html" class="dropdown-item">Revisar Compra</a>
+                                    <a href="chackout.php" class="dropdown-item">Revisar Compra</a>
                                 </div>
                             </div>
                             <a href="contact.html" class="nav-item nav-link">Contactos</a>
@@ -169,8 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                 </div>
             </div>
         </div>
-          
-        <div class="container-fluid fruite py-5">
+
             <div class="container py-5">
                 <div class="tab-class text-center">
                     <div class="row g-4">
@@ -208,6 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                             <div class="row g-4">
                                 <?php if ($productos) {while ($fila = mysqli_fetch_assoc($productos)) {?>
                                 <div class="col-md-6 col-lg-4 col-xl-3">
+                                <a href="shop-detail.php?id=<?php echo $fila['id']; ?>">
                                     <div class="rounded position-relative fruite-item">
                                         <div class="fruite-img">
                                             <img src="<?php echo $fila['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
@@ -226,6 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                                             </div>
                                         </div>
                                     </div>
+                                </a>
                                 </div>
                             <?php } } else {echo "No se encontraron registros.";} ?>
                         </div>
@@ -239,7 +269,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                                         <?php do { ?>
                                         <div class="col-md-6 col-lg-4 col-xl-3">
                                             <div class="rounded position-relative fruite-item">
-                                           
+                                            <a href="shop-detail.php?id=<?php echo $botines1['id']; ?>">
                                                 <div class="fruite-img">
                                                     <img src="<?php echo $botines1['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
                                                 </div>
@@ -256,7 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                                                     </form>
                                                     </div>
                                                 </div>
-                                            
+                                            </a>
                                             </div>
                                         </div>
                                         <?php } while($botines1 = mysqli_fetch_array($botines));?>
@@ -275,7 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                                         <?php do { ?>
                                         <div class="col-md-6 col-lg-4 col-xl-3">
                                             <div class="rounded position-relative fruite-item">
-                                           
+                                            <a href="shop-detail.php?id=<?php echo $sombreros1['id']; ?>">
                                                 <div class="fruite-img">
                                                     <img src="<?php echo $sombreros1['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
                                                 </div>
@@ -292,7 +322,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                                                     </form>
                                                     </div>
                                                 </div>
-                                            
+                                            </a>
                                             </div>
                                         </div>
                                         <?php } while($sombreros1 = mysqli_fetch_array($sombreros));?>
@@ -311,7 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                                         <?php do { ?>
                                         <div class="col-md-6 col-lg-4 col-xl-3">
                                             <div class="rounded position-relative fruite-item">
-                                           
+                                            <a href="shop-detail.php?id=<?php echo $trajes1['id']; ?>">
                                                 <div class="fruite-img">
                                                     <img src="<?php echo $trajes1['img']; ?>" class="img-fluid w-100 rounded-top" alt="">
                                                 </div>
@@ -328,7 +358,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                                                     </form>
                                                     </div>
                                                 </div>
-                                            
+                                            </a>
                                             </div>
                                         </div>
                                         <?php } while($trajes1 = mysqli_fetch_array($trajes));?>
@@ -342,6 +372,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                     </div>
                 </div>      
             </div>
+        </div>
+        <div class="container-fluid fruite py-5">
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div id="liveToast" class="toast bg-warning" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto text-danger">Notificación</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body text-dark">
+                    Mensaje del Toast.
+                </div>
+            </div>
+        </div>
+    </div>
+
         </div>
                 
         <div class="container-fluid vesitable py-5">
@@ -441,14 +486,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
                 </div>
             </div>
         </div>
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-  <strong>Holy guacamole!</strong> You should check in on some of those fields below.
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-
-<a id="cart-popover" tabindex="0" class="btn btn-lg btn-danger" role="button" data-toggle="popover" data-trigger="focus" title="Producto añadido" data-content="El producto ha sido añadido al carrito.">Ver mensaje</a>
 
                  <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">
             <div class="container py-5">
@@ -530,35 +567,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_producto'])) {
         </div>
         
             <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>   
-
-            <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const forms = document.querySelectorAll('.add-to-cart-form');
-    const messageContainer = document.getElementById('message-container');
-
-    forms.forEach(form => {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const formData = new FormData(form);
-            fetch('', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                messageContainer.innerHTML = data;
-                // Actualizar el contenido del carrito si es necesario
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                messageContainer.innerHTML = 'Error al añadir el producto al carrito';
-            });
-        });
-    });
-});
-</script>
-
      
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -569,6 +577,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     
     <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+        console.log("DOM fully loaded and parsed");
+        <?php if(isset($_SESSION['toast_message'])): ?>
+            var toastEl = document.getElementById('liveToast');
+            console.log("toastEl:", toastEl); 
+            if (toastEl) {
+                console.log("Toast element found");
+                var toastBody = toastEl.querySelector('.toast-body');
+                console.log("toastBody:", toastBody); 
+                if (toastBody) {
+                    toastBody.innerHTML = "<?php echo $_SESSION['toast_message']; ?>";
+
+                    var toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                    
+                    <?php unset($_SESSION['toast_message']); ?>
+                } else {
+                    console.log("Toast body element not found");
+                }
+            } else {
+                console.log("Toast element not found");
+            }
+        <?php endif; ?>
+    });
+
+        </script>
     </body>
 
 </html>
