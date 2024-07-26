@@ -223,6 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <i class="fa fa-star"></i>
                                 </div>
                                 <p class="mb-4"><?php echo $producto['descripcion']; ?></p>
+                                <p class="mb-4">Existencia: <?php echo $producto['existencia']; ?></p>
                                 <form class="add-to-cart-form" method="POST" action="">
                                 <div class="input-group quantity mb-5" style="width: 100px;">
                                     <div class="input-group-btn">
