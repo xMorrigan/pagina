@@ -1,3 +1,23 @@
+<?php session_start();
+$varsession = $_SESSION['id'];
+if($varsession == null || $varsession== ''){
+    echo "<script>alert('Debes iniciar sesión para añadir al carrito');</script>";
+    echo "<script>window.location ='login.php';</script>";
+    exit();
+}
+include 'conexion.php';
+$total = 0;
+$envio = 250;
+$carritoQuery = "SELECT productos.*, carrito_usuarios.id as carrito_id , carrito_usuarios.talla as talla_usuario,carrito_usuarios.cantidad as cantidad_usuario
+                 FROM productos 
+                 INNER JOIN carrito_usuarios ON productos.id = carrito_usuarios.id_producto 
+                 WHERE carrito_usuarios.id_sesion = '$varsession' AND carrito_usuarios.cantidad > 0";
+$carrito= mysqli_query($conexion, $carritoQuery);
+$carrito1 = mysqli_fetch_array($carrito);
+$id_persona = $_SESSION['id'];
+$registro = mysqli_query($conexion,"select * from personas where id = $id_persona");
+$reg = mysqli_fetch_array($registro);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -133,19 +153,19 @@
                                 <div class="col-md-12 col-lg-6">
                                     <div class="form-item w-100">
                                         <label class="form-label my-3">Nombre <sup>*</sup></label>
-                                        <input type="text" class="form-control">
+                                        <input <?php { echo "value='".$reg['nombre']."' "; }?> type="text" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-12 col-lg-6">
                                     <div class="form-item w-100">
                                         <label class="form-label my-3">Apellidos<sup>*</sup></label>
-                                        <input type="text" class="form-control">
+                                        <input type="text" class="form-control" <?php { echo "value='".$reg['apellidos']."' "; }?>>
                                     </div>
                                 </div>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Direccion<sup>*</sup></label>
-                                <input type="text" class="form-control" placeholder="Numero de exterior, Nombre de la calle">
+                                <input type="text" class="form-control" placeholder="Numero de exterior, Nombre de la calle" <?php echo "value='".(($reg['direccion'] == "S/D") ? '' : $reg['direccion'])."' "; ?>>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Ciudad<sup>*</sup></label>
@@ -153,19 +173,19 @@
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Estado<sup>*</sup></label>
-                                <input type="text" class="form-control">
+                                <input type="text" class="form-control" <?php echo "value='".(($reg['estado_region'] == "S/D") ? '' : $reg['estado_region'])."' "; ?>>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Código Postal<sup>*</sup></label>
-                                <input type="text" class="form-control">
+                                <input type="text" class="form-control" <?php echo "value='".(($reg['codigo_postal'] == "S/D") ? '' : $reg['codigo_postal'])."' "; ?>>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Teléfono<sup>*</sup></label>
-                                <input type="tel" class="form-control">
+                                <input type="tel" class="form-control" <?php echo "value='".(($reg['aumero'] == 5) ? '' : $reg['aumero'])."' "; ?>>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Correo Electrónico <sup>*</sup></label>
-                                <input type="email" class="form-control">
+                                <input type="email" class="form-control" <?php echo "value='".(($reg['email'] == "S/D") ? '' : $reg['email'])."' "; ?>>
                             </div>
                             <div class="form-check my-3">
                                 <input type="checkbox" class="form-check-input" id="Account-1" name="Accounts" value="Accounts">
@@ -193,39 +213,27 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                    <?php if (mysqli_num_rows($carrito) > 0) {  ?>
+                                        <?php do {                    
+                                            ?>
                                         <tr>
                                             <th scope="row">
                                                 <div class="d-flex align-items-center mt-2">
-                                                    <img src="img/Botin 982.jpg" class="img-fluid rounded-circle" style="width: 90px; height: 90px;" alt="">
+                                                    <img src="<?php echo $carrito1['img']; ?>" class="img-fluid rounded-circle" style="width: 90px; height: 90px;" alt="">
                                                 </div>
                                             </th>
-                                            <td class="py-5">Botin 982</td>
-                                            <td class="py-5">$499.00</td>
-                                            <td class="py-5">1</td>
-                                            <td class="py-5">$499.00</td>
+                                            <td class="py-5"><?php echo $carrito1['nombre']; ?></td>
+                                            <td class="py-5">$<?php echo $carrito1['precio']; ?></td>
+                                            <td class="py-5"><?php echo $carrito1['cantidad_usuario']; ?></td>
+                                            <td class="py-5">$<?php echo $carrito1['cantidad_usuario'] * $carrito1['precio']; ?></td>
                                         </tr>
-                                        <tr>
-                                            <th scope="row">
-                                                <div class="d-flex align-items-center mt-2">
-                                                    <img src="img/stetson fieltro.png" class="img-fluid rounded-circle" style="width: 90px; height: 90px;" alt="">
-                                                </div>
-                                            </th>
-                                            <td class="py-5">Sombrero Stetson Fieltro Negro</td>
-                                            <td class="py-5">$499.00</td>
-                                            <td class="py-5">1</td>
-                                            <td class="py-5">$499.00</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">
-                                                <div class="d-flex align-items-center mt-2">
-                                                    <img src="img/Botin 501.jpg" class="img-fluid rounded-circle" style="width: 90px; height: 90px;" alt="">
-                                                </div>
-                                            </th>
-                                            <td class="py-5">Botin 501</td>
-                                            <td class="py-5">$499.00</td>
-                                            <td class="py-5">1</td>
-                                            <td class="py-5">$499.00</td>
-                                        </tr>
+                                        <?php
+                                        $precio = $carrito1['precio'] * $carrito1['cantidad_usuario'];
+                                        $total += $precio;?>
+                                        <?php } while($carrito1 = mysqli_fetch_array($carrito));?>
+                                        <?php } else { ?>
+                                            <p>No hay productos en esta categoría.</p>
+                                        <?php } ?>
                                         <tr>
                                             <th scope="row">
                                             </th>
@@ -236,7 +244,7 @@
                                             </td>
                                             <td class="py-5">
                                                 <div class="py-3 border-bottom border-top">
-                                                    <p class="mb-0 text-dark">$1497.00</p>
+                                                    <p class="mb-0 text-dark">$<?php echo $total; ?></p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -275,6 +283,7 @@
                                                 </div>
                                             </td>
                                         </tr>
+                                      
                                     </tbody>
                                 </table>
                             </div>

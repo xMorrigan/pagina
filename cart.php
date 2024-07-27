@@ -250,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <p class="mb-0 mt-4"><?php echo $carrito1['precio']; ?></p>
                                 </td>
                                 <td>
-                                    <p class="mb-0 mt-4"><?php echo $carrito1['precio']; ?> </p>
+                                    <p class="mb-0 mt-4"><?php echo $carrito1['precio'] * $carrito1['cantidad_usuario']; ?> </p>
                                 </td>
                                 <td>
                                 <form method="POST" action="">
