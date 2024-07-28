@@ -169,6 +169,7 @@ if(isset($_REQUEST['id'])){
                         <li><a class="dropdown-item" href="dashboard.php">Inicio del dashboard</a></li>
                         <li><a class="dropdown-item" href="cat_usuarios.php">Usuarios</a></li>
                         <li><a class="dropdown-item" href="inventario.php">Productos</a></li>
+                        <li><a class="dropdown-item" href="ventas.php">Ventas</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>

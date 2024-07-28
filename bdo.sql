@@ -55,3 +55,27 @@ INSERT INTO `productos`(`nombre`, `descripcion`, `precio`, `categoria`, `img`, `
 ('Traje Adelita','Productos 100% Mexicanos','500','trajes', 'img/Ade_Rojo.jfif', '20', '500', '500'),
 ('Hannover Bordada Blanca','Productos 100% Mexicanos','950','camisas', 'img/camisa1.png', '20', '500', '500'),
 ('Hannover Bordada Beige','Productos 100% Mexicanos','950','camisas', 'img/Camisa2.jpg', '20', '500', '500');
+
+CREATE TABLE IF NOT EXISTS ventas(
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_persona INT NOT NULL,
+    fecha_venta DATETIME NOT NULL,
+    devuelta BOOLEAN DEFAULT FALSE,
+    credito BOOLEAN DEFAULT FALSE,
+    fecha_pago DATETIME NULL,
+    fecha_pagada DATETIME NULL,
+    FOREIGN KEY (id_persona) REFERENCES Personas(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS detalles_venta(
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_venta BIGINT UNSIGNED NOT NULL,
+    id_producto BIGINT UNSIGNED NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(9,2) NOT NULL,
+    FOREIGN KEY (id_venta) REFERENCES ventas(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);

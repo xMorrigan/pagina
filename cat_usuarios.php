@@ -124,88 +124,60 @@ if(isset($_REQUEST['id'])){
 
 
     <!-- Navbar start -->
-    <div class="container-fluid fixed-top">
-        <div class="container topbar bg-primary d-none d-lg-block">
-            <div class="d-flex justify-content-between">
-                <div class="top-info ps-2">
-                    <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> <a href="#" class="text-white">Carretera, Villahermosa-Teapa Km. 14.6, 86288 Parrilla II, Tab. México</a></small>
-                    <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#" class="text-white">mine810.40@gmail.com</a></small>
-                </div>
-                <div class="top-link pe-2">
-                    <a href="#" class="text-white"><small class="text-white mx-2">Politica y Privacidad</small>
-
-                </div>
-            </div>
-        </div>
-        <div class="container px-0">
-            <nav class="navbar navbar-light bg-white navbar-expand-xl">
-                <a href="index.php" class="navbar-brand"><h1 class="text-primary display-6">La Ocasión </h1></a>
-                <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                    <span class="fa fa-bars text-primary"></span>
-                </button>
-                <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
-                    <div class="navbar-nav mx-auto">
-                        <a href="index.php" class="nav-item nav-link active">Inicio</a>
-                        <a href="shop.php" class="nav-item nav-link">Tienda</a>
-                        <a href="shop-detail.php" class="nav-item nav-link">Productos</a>
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Otras Paginas</a>
-                            <div class="dropdown-menu m-0 bg-secondary rounded-0">
-                                <a href="cart.php" class="dropdown-item">Carrito</a>
-                                <a href="chackout.php" class="dropdown-item">Revisar Compra</a>
-                            </div>
-                        </div>
-                        <a href="contact.html" class="nav-item nav-link">Contactos</a>
-                    </div>
-                    <div class="d-flex m-3 me-0">
-                        <button class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fas fa-search text-primary"></i></button>
-                        <a href="cart.php" class="position-relative me-4 my-auto">
-                            <i class="fa fa-shopping-bag fa-2x"></i>
-                            <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">3</span>
-                        </a>
-                        <a href="Profile.php" class="my-auto">
-                            <i class="fas fa-user fa-2x"></i>
-                        </a>
-                    </div>
-                </div>
-            </nav>
-        </div>  
-    </div>
-    <!-- Navbar End -->
-
-
-    <!-- Modal Search Start -->
-    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content rounded-0">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Search by keyword</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body d-flex align-items-center">
-                    <div class="input-group w-75 mx-auto d-flex">
-                        <input type="search" class="form-control p-3" placeholder="keywords" aria-describedby="search-icon-1">
-                        <span id="search-icon-1" class="input-group-text p-3"><i class="fa fa-search"></i></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-        <!-- Modal Search End -->
-
-
-        <!-- Single Page Header start -->
-        <div class="container-fluid page-header py-5">
+    <div class="container-fluid page-header py-5">
             <h1 class="text-center text-white display-6">Usuarios</h1>
             <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="dashboard.php">Inicio</a></li>
-                <li class="breadcrumb-item"><a href="cat_usuarios.php">Usuarios</a></li>
+                <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="#">Usuarios</a></li>
             </ol>
         </div>
         <!-- Single Page Header End -->
+        <nav class="navbar bg-body-tertiary fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand fs-1 text-primary mb-0" href="index.php">LA OCASIÓN </a><span class="text-primary-emphasis">Dashboard</s>
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon text-success"><i class="fa fa-solid fa-bars py-1"></i></span>
+                </button>
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">La ocasión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="index.php">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="profile.php">Perfil</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Administrador
+                        </a>
+                        <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="dashboard.php">Inicio del dashboard</a></li>
+                        <li><a class="dropdown-item" href="cat_usuarios.php">Usuarios</a></li>
+                        <li><a class="dropdown-item" href="inventario.php">Productos</a></li>
+                        <li><a class="dropdown-item" href="ventas.php">Ventas</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="logout.php">Cerrar sesión</a></li>
+                        </ul>
+                    </li>
+                    </ul>
+                </div>
+                </div>
+            </div>
+            </nav>
+    <!-- Navbar End -->
 
 
+
+
+
+ 
         <!-- Cart Page Start -->
         
         <div class="container rounded bg-white mt-5 mb-5">

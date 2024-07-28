@@ -22,6 +22,24 @@ $productos_sm = "SELECT * FROM `productos` WHERE existencia < stock_minimo";
 $resultadoP = mysqli_query($conexion, $productos_sm);
 $resultadoP1 = mysqli_fetch_array($resultadoP);
 
+$topProductos = "SELECT 
+    p.id AS producto_id,
+    p.nombre AS producto_nombre,
+    SUM(dv.cantidad) AS cantidad_total_vendida,
+    p.precio,
+    p.img,
+    SUM(dv.cantidad * dv.precio_unitario) AS total_ganado
+FROM 
+    detalles_venta dv
+JOIN 
+    productos p ON dv.id_producto = p.id
+GROUP BY 
+    p.id, p.nombre, p.precio
+ORDER BY 
+    cantidad_total_vendida DESC LIMIT 4";
+$resultadoTP = mysqli_query($conexion, $topProductos);
+$resultadoTP1 = mysqli_fetch_array($resultadoTP);
+
 $ventasQuery = "
     SELECT 
         v.id AS numero_venta,
@@ -40,111 +58,11 @@ $ventasQuery = "
 $resultadoV = mysqli_query($conexion, $ventasQuery);
 $resultadoV1 = mysqli_fetch_array($resultadoV);
 
-$tp = "SELECT COUNT(*) as total FROM productos";
-$result = mysqli_query($conexion, $tp);
-$row = mysqli_fetch_assoc($result);
-$total_productos = $row['total'];
-
-$tu = "SELECT COUNT(*) as total FROM personas";
-$resultU = mysqli_query($conexion, $tu);
-$rowU = mysqli_fetch_assoc($resultU);
-$total_usuarios = $rowU['total'];
-
-$tpsm = "SELECT COUNT(*) as total FROM productos WHERE existencia < stock_minimo";
-$resultSM = mysqli_query($conexion, $tpsm);
-$rowSM = mysqli_fetch_assoc($resultSM);
-$total_PSM = $rowSM['total'];
-
-$ventas = "SELECT COUNT(*) as total FROM ventas";
-$resultV = mysqli_query($conexion, $ventas);
-$rowV = mysqli_fetch_assoc($resultV);
-$total_ventas = $rowV['total'];
-
-$productosC = "SELECT * FROM productos";
-$productos = mysqli_query($conexion, $productosC);
-$productos1 = mysqli_fetch_array($productos);
-
 $busqueda = isset($_GET['busqueda']) ? $_GET['busqueda'] : '';
 $consulta_busqueda = "SELECT * FROM productos WHERE nombre LIKE '%$busqueda%'";
 $resultado_busqueda = mysqli_query($conexion, $consulta_busqueda);
-if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['id'])){
-    $nombre = $_REQUEST['nombre'];
-    $descripcion = $_REQUEST['descripcion'];
-    $precio = $_REQUEST['precio'];
-    $categoria = $_REQUEST['categoria'];
-    $stock_minimo = $_REQUEST['stock_minimo'];
-    $stock_maximo = $_REQUEST['stock_maximo'];
-    $existencia = $_REQUEST['existencia'];
-
-    $subio = false;
-    $directorio = 'img';
-    $foto = $directorio."/".$_FILES['img']['name'];
-
-    if(is_uploaded_file($_FILES['img']['tmp_name'])){
-        move_uploaded_file($_FILES['img']['tmp_name'], $foto);
-        $subio=true;
-    // cambio aqui se cerro la llave, revisa las llaves aqui
-    }
-    if($subio){
-        $insertar = "INSERT INTO productos(nombre,descripcion,precio,categoria,stock_minimo,stock_maximo,existencia,img) values('$nombre','$descripcion','$precio','$categoria','$stock_minimo','$stock_maximo','$existencia','$foto')";
-        mysqli_query($conexion,$insertar);
-        echo "<script> alert('Producto registrado'); </script>";
-        echo "<script> window.location='inventario.php'; </script>";
-    }
-    else{
-        $foto = 'img/default.jpg'; // Ruta de la imagen por defecto
-        $insertar = "INSERT INTO productos(nombre,descripcion,precio,categoria,stock_minimo,stock_maximo,existencia,img) values('$nombre','$descripcion','$precio','$categoria','$stock_minimo','$stock_maximo','$existencia','$foto')";
-        mysqli_query($conexion, $insertar);
-        echo "<script> alert('Producto registrado con imagen por defecto.'); </script>";
-        echo "<script> window.location='inventario.php'; </script>";
-    }
-}
-
-if(isset($_REQUEST['eliminar'])){
-    $eliminar = $_REQUEST['eliminar'];
-    mysqli_query($conexion,"delete from productos where id=$eliminar");
-    echo "<script> alert('Producto borrado'); </script>";
-    echo "<script> window.location='inventario.php' </script>";
-}
-
-if(isset($_REQUEST['editar'])){
-    $editar = $_REQUEST['editar'];
-    $registro = mysqli_query($conexion,"select * from productos where id= $editar");
-    $reg = mysqli_fetch_array($registro);}
-
-if(isset($_REQUEST['id'])){
-    $id = $_REQUEST['id'];
-    $nombre = $_REQUEST['nombre'];
-    $descripcion = $_REQUEST['descripcion'];
-    $precio = $_REQUEST['precio'];
-    $categoria = $_REQUEST['categoria'];
-    $stock_minimo = $_REQUEST['stock_minimo'];
-    $stock_maximo = $_REQUEST['stock_maximo'];
-    $existencia = $_REQUEST['existencia'];
-
-    $subio = false;
-    $directorio = 'img';
-    $foto = $directorio."/".$_FILES['img']['name'];
 
 
-    if(is_uploaded_file($_FILES['img']['tmp_name'])){
-        move_uploaded_file($_FILES['img']['tmp_name'], $foto);
-        $subio=true;
-        // cambio  aqui lo mismo de las llaves
-    }
-    if($subio){
-        mysqli_query($conexion,"update productos set nombre='$nombre',descripcion='$descripcion', precio ='$precio', categoria= '$categoria', stock_minimo= '$stock_minimo', stock_maximo= '$stock_maximo', existencia= '$existencia', img='$foto' where id = '$id'");
-        echo "<script> alert('Producto actualizado'); </script>";
-        echo "<script> window.location='inventario.php'; </script>";
-    }
-    else{
-        // cambio le agregue las lineas de abajo es en caso de no modificar la imagen
-        $imagen_existente = $_REQUEST['archivo_mod'];
-        mysqli_query($conexion,"update productos set nombre='$nombre',descripcion='$descripcion', precio ='$precio', categoria= '$categoria', stock_minimo= '$stock_minimo', stock_maximo= '$stock_maximo', existencia= '$existencia' where id = '$id'");
-        echo "<script> alert('Producto actualizado'); </script>";
-        echo "<script> window.location='inventario.php'; </script>";
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -231,7 +149,6 @@ if(isset($_REQUEST['id'])){
                         <li><a class="dropdown-item" href="dashboard.php">Inicio del dashboard</a></li>
                         <li><a class="dropdown-item" href="cat_usuarios.php">Usuarios</a></li>
                         <li><a class="dropdown-item" href="inventario.php">Productos</a></li>
-                        <li><a class="dropdown-item" href="ventas.php">Ventas</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -246,94 +163,35 @@ if(isset($_REQUEST['id'])){
 
         <!-- Cart Page Start -->
         <div class="container-fluid mt-5">
-       
-            <div class="mt-20 row">
-                <div class="card text-bg-primary col mx-4">
-                    <div class="card-body row">
-                        <h5 class="card-title col"><i class="text-center fa fa-shopping-bag fa-5x py-1 text-primary"></i></h5>
-                        <p class="card-text col fs-3 text-primary"><span class="fs-1"><?php echo $total_productos; ?></span><br> Productos</p>
-                    </div>
+        <div class="text-center mt-20 row">
+            <h1 class="mt-2 text-info">Productos más vendidos </h1>
+            <?php if (mysqli_num_rows($resultadoTP) > 0) {  ?>
+                <?php do { ?>
+                <div class="card mx-4" style="width: 18rem;">
+                <img class="card-img-top" src="<?php echo $resultadoTP1['img']; ?>" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title text-center"><?php echo $resultadoTP1['producto_nombre']; ?></h5>
                 </div>
-                <div class="card text-bg-primary col mx-4">
-                    <div class="card-body row">
-                        <h5 class="card-title col"><i class="text-center fa fa-solid fa-exclamation fa-5x py-2 text-danger"></i></h5>
-                        <p class="card-text col fs-5 text-danger"><span class="fs-1"><?php echo $total_PSM; ?></span><br> Productos insuficientes</p>
-                    </div>
                 </div>
-                <div class="card text-bg-primary col mx-4">
-                    <div class="card-body row">
-                        <h5 class="card-title col"><i class="text-center fa fa-solid fa-user fa-5x py-1 text-info-subtle"></i></h5>
-                        <p class="card-text col fs-3 text-info-subtle"><span class="fs-1"><?php echo $total_usuarios; ?></span><br> Usuarios</p>
-                    </div>
-                </div>
-                <div class="card text-bg-primary col mx-4">
-                    <div class="card-body row">
-                        <h5 class="card-title col"><i class="text-center fa fa-shopping-bag fa-5x py-1 text-success"></i></h5>
-                        <p class="card-text col fs-3 text-success"><span class="fs-1"><?php echo $total_ventas; ?></span><br> Ventas</p>
-                    </div>
-                </div>
+                <?php } while($resultadoTP1 = mysqli_fetch_array($resultadoTP));?>
+                        <?php } else { ?>
+                            <p>Aún no hay productos vendidos</p>
+                        <?php } ?>
+               
             </div>
 
 
             <div class="mt-5 row">
 
                 <div class="card text-bg-primary col mx-4">
-                <h1 class="text-center mt-2">Productos por agotarse</h1>
-                    <div class="card-body row">
                     
-                    <table class="table">
-                        <thead>
-                            <tr>
-                            <th scope="col"></th>
-                            <th scope="col">Nombre</th>
-                            <th scope="col">Existencia</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php if (mysqli_num_rows($resultadoP) > 0) {  ?>
-                            <?php do { ?>
-                            <tr>
-                            <th scope="row">
-                            <div class="d-flex align-items-center">
-                                <img src="<?php echo $resultadoP1['img']; ?>" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="">
-                            </div>
-                            </th>
-                            <td><?php echo $resultadoP1['nombre']; ?></td>
-                            <?php
-                            $existencia = isset($resultadoP1['existencia']) ? $resultadoP1['existencia'] : 0;
-                            $stock_minimo = isset($resultadoP1['stock_minimo']) ? $resultadoP1['stock_minimo'] : 0;
-                            $stock_maximo = isset($resultadoP1['stock_maximo']) ? $resultadoP1['stock_maximo'] : 0;
-
-                            $existencia_class = '';
-                            if ($existencia < $stock_minimo) {
-                                $existencia_class = 'bg-danger text-white';
-                            } elseif ($existencia > $stock_maximo) {
-                                $existencia_class = 'bg-success text-white';
-                            }
-                            ?>
-                            <td class="<?php echo $existencia_class; ?>"><?php echo $resultadoP1['existencia']; ?></td>
-                            </tr>
-                            <?php } while($resultadosP1 = mysqli_fetch_array($resultadoP));?>
-                        <?php } else { ?>
-                            <p>Todos los productos estan abastecidos</p>
-                        <?php } ?>
-                        </tbody>
-                        </table>
-                        
-                    </div>
-                </div>
-
-
-
-                <div class="card text-bg-primary col mx-4">
-                    
-                <h1 class="text-center mt-2">Ventas <br> <?php 
+                <h1 class="text-center mt-2 text-dark">Ventas <br><span class="text-warning"><?php 
                     if ($resultTotal) {
                         $row = $resultTotal->fetch_assoc();
                         echo "Ganancias: $" . $row['total_venta'];
                     } else {
                         echo "Error al calcular el total ganado: " . $conexion->error;
-                    }?></h1>
+                    }?></span> </h1>
                     <div class="card-body row">
                     
                     <table class="table">
@@ -341,6 +199,7 @@ if(isset($_REQUEST['id'])){
                             <tr>
                                 <th scope="col">Fecha de venta</th>
                                 <th scope="col">Total de la venta</th>
+                                <th scope="col">Productos vendidos</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -349,6 +208,7 @@ if(isset($_REQUEST['id'])){
                             <tr>
                                 <td><?php echo htmlspecialchars($resultadoV1['fecha_venta']); ?></td>
                                 <td><?php echo htmlspecialchars($resultadoV1['total_ganado']); ?></td>
+                                <td><?php echo htmlspecialchars($resultadoV1['productos_vendidos']); ?></td>
                             </tr>
                             <?php } while($resultadoV1 = mysqli_fetch_array($resultadoV));?>
                         <?php } else { ?>

@@ -17,7 +17,62 @@ $carrito1 = mysqli_fetch_array($carrito);
 $id_persona = $_SESSION['id'];
 $registro = mysqli_query($conexion,"select * from personas where id = $id_persona");
 $reg = mysqli_fetch_array($registro);
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pedido'])) {
+    $id_sesion = session_id();
+    $total = 0;
+
+    // Iniciar transacción
+    $conexion->begin_transaction();
+
+    try {
+        // Insertar en la tabla ventas
+        $stmt = $conexion->prepare("INSERT INTO ventas (id_persona, fecha_venta) VALUES (?, NOW())");
+        $stmt->bind_param("i", $id_persona);
+        $stmt->execute();
+        $id_venta = $stmt->insert_id;
+
+        // Obtener el carrito de compras
+        $query_carrito = "SELECT c.id, p.id as id_producto, p.precio, c.cantidad 
+                          FROM carrito_usuarios c 
+                          JOIN productos p ON c.id_producto = p.id 
+                          WHERE c.id_sesion = '$varsession'";
+        $carrito = $conexion->query($query_carrito);
+
+        // Verificar si se obtuvieron los productos del carrito
+        if ($carrito->num_rows == 0) {
+            throw new Exception("No se encontraron productos en el carrito.");
+        }
+
+        // Insertar en la tabla detalles_venta
+        $stmt_detalle = $conexion->prepare("INSERT INTO detalles_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (?, ?, ?, ?)");
+        while ($item = $carrito->fetch_assoc()) {
+            $stmt_detalle->bind_param("iiid", $id_venta, $item['id_producto'], $item['cantidad'], $item['precio']);
+            $stmt_detalle->execute();
+            echo "Insertando en detalles_venta: id_venta={$id_venta}, id_producto={$item['id_producto']}, cantidad={$item['cantidad']}, precio={$item['precio']}<br>";
+        }
+
+        // Vaciar el carrito
+        $conexion->query("DELETE FROM carrito_usuarios WHERE id_sesion = '$varsession'");
+        echo "Eliminando productos del carrito para id_sesion={$varsession}<br>";
+
+        // Confirmar transacción
+        $conexion->commit();
+
+        echo "<script>alert('Compra realizada con éxito');</script>";
+        echo "<script>window.location ='index.php';</script>";
+
+    } catch (Exception $e) {
+        // Revertir transacción
+        $conexion->rollback();
+        echo "Error al realizar la compra: " . $e->getMessage();
+    }
+
+    // Cerrar la conexión
+    $conexion->close();
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -232,7 +287,7 @@ $reg = mysqli_fetch_array($registro);
                                         $total += $precio;?>
                                         <?php } while($carrito1 = mysqli_fetch_array($carrito));?>
                                         <?php } else { ?>
-                                            <p>No hay productos en esta categoría.</p>
+                                            <p>No hay productos en por comprarse, agregue productos al carrito.</p>
                                         <?php } ?>
                                         <tr>
                                             <th scope="row">
@@ -279,7 +334,7 @@ $reg = mysqli_fetch_array($registro);
                                             <td class="py-5"></td>
                                             <td class="py-5">
                                                 <div class="py-3 border-bottom border-top">
-                                                    <p class="mb-0 text-dark">$1,537.00</p>
+                                                    <p class="mb-0 text-dark">$<?php echo $total; ?></p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -320,12 +375,17 @@ $reg = mysqli_fetch_array($registro);
                                     </div>
                                 </div>
                             </div>
+                            </form>
+
                             <div class="row g-4 text-center align-items-center justify-content-center pt-4">
-                                <button type="button" class="btn border-secondary py-3 px-4 text-uppercase w-100 text-primary">Realizar pedido</button>
+                            <form action="chackout.php" method="post">
+                            <input type="hidden" name="pedido" value="1">
+                                <button type="submit" class="btn border-secondary py-3 px-4 text-uppercase w-100 text-primary">Realizar pedido</button>
+                            </form>
                             </div>
                         </div>
                     </div>
-                </form>
+
             </div>
         </div>
         <!-- Checkout Page End -->
